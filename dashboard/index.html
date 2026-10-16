@@ -150,43 +150,41 @@
   /* Run log */
   .days { display: grid; gap: 10px; margin-top: 12px; }
   .day { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; }
-  .day > summary { display: flex; align-items: center; gap: 12px; padding: 13px 16px; flex-wrap: wrap; }
+  .day > summary { display: flex; align-items: center; gap: 12px; padding: 13px 16px; min-height: 52px; }
   .day > summary:hover { background: var(--panel-2); }
-  .day-name { font: 700 18px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; min-width: 120px; }
-  .day-meta { display: flex; gap: 18px; flex-wrap: wrap; font: 12px/1 var(--mono); letter-spacing: 0.08em; color: var(--ink-2); text-transform: uppercase; margin-left: auto; }
-  .day-meta b { color: var(--ink); font-weight: 400; }
-  .day-meta .flag, .day-meta .flag b { color: var(--warn); }
+  .day-name { font: 700 18px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+  .day-count { margin-left: auto; font: 14px/1 var(--mono); letter-spacing: 0.06em; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .day-count.short { color: var(--warn); }
   .day-body { border-top: 1px solid var(--line); }
 
   .run { border-bottom: 1px solid var(--line-soft); }
   .run:last-child { border-bottom: 0; }
-  .run > summary { display: grid; grid-template-columns: 18px 70px minmax(0, 1.4fr) 92px minmax(110px, 1fr) 118px; align-items: center; gap: 12px; padding: 11px 16px; }
+  .run > summary { display: grid; grid-template-columns: 18px 72px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 16px; min-height: 48px; }
   .run > summary:hover { background: var(--panel-2); }
-  .r-time { font: 13px/1 var(--mono); color: var(--ink-2); }
-  .r-task { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .r-task small { color: var(--ink-2); font-weight: 400; margin-left: 6px; }
-  .r-count { font: 15px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
-  .r-count small { color: var(--ink-2); }
-  .r-barwrap { display: block; }
-  .r-bar { display: block; height: 5px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
-  .r-bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
-  .pill { justify-self: end; display: inline-flex; align-items: center; gap: 6px; font: 600 12px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 9px; border-radius: 3px; border: 1px solid; white-space: nowrap; }
-  .pill.complete { color: var(--ok); border-color: var(--ok); background: rgba(63,209,143,0.14); }
-  .pill.partial { color: var(--warn); border-color: var(--warn); background: rgba(255,181,71,0.14); }
-  .pill.failed { color: var(--bad); border-color: var(--bad); background: rgba(255,92,97,0.14); }
-  .pill .ic { font-family: var(--mono); }
-  .run-body { padding: 4px 16px 16px 46px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 24px; background: rgba(0,0,0,0.12); }
-  .field { min-width: 0; }
-  .field .k { font: 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--label); margin: 10px 0 5px; }
-  .field .v { color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
-  .field .v.mono { font-family: var(--mono); font-size: 13.5px; }
-  .field .v .spent { color: var(--ink-2); }
-  .field .v.id { color: var(--ink-2); }
-  .field.wide { grid-column: 1 / -1; }
+  .r-time { font: 13.5px/1 var(--mono); color: var(--ink-2); white-space: nowrap; }
+  .r-task { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .r-count { font: 16px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .r-count.partial { color: var(--warn); }
+  .r-count.failed { color: var(--bad); }
+
+  /* Run details: one item per line, label left, value right */
+  .run-body { padding: 4px 16px 16px 46px; background: rgba(0,0,0,0.16); }
+  .stack { max-width: 560px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+  .row .k, .block .k { font: 11px/1.4 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--label); flex: none; }
+  .row .v { color: var(--ink); font-size: 14.5px; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+  .row .v.mono { font-family: var(--mono); font-size: 14px; }
+  .row .v .spent { color: var(--ink-2); }
+  .row .v.complete { color: var(--ok); }
+  .row .v.partial { color: var(--warn); }
+  .row .v.failed { color: var(--bad); }
+  .row.id .v { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+  .block { padding: 12px 0 10px; border-bottom: 1px solid var(--line-soft); }
+  .block .k { display: block; margin-bottom: 8px; }
+  .block .v { color: var(--ink); font-size: 14.5px; }
   .issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
   .issues li { display: flex; gap: 8px; color: var(--ink-2); font-size: 13.5px; }
   .issues li::before { content: "▲"; color: var(--warn); font-size: 9px; line-height: 20px; }
-  .none { color: var(--ink-2); font-size: 13.5px; }
 
   /* States */
   .notice { background: var(--panel); border: 1px dashed var(--line); border-radius: 3px; padding: 26px; text-align: center; color: var(--ink-2); margin-top: 26px; }
@@ -239,21 +237,12 @@
     .chart-card { padding: 14px 12px 8px; }
     .chart-title { flex-direction: column; gap: 6px; }
 
-    .day > summary { padding: 12px 14px; gap: 8px 12px; min-height: 52px; }
-    .day-name { min-width: 0; font-size: 17px; }
-    .day-meta { margin-left: 0; width: 100%; padding-left: 30px; gap: 14px; }
+    .day > summary { padding: 12px 14px; }
+    .day-name { font-size: 17px; }
 
-    .run > summary { grid-template-columns: 18px 56px minmax(0, 1fr) auto auto; gap: 10px; padding: 12px 14px; min-height: 52px; }
-    .r-barwrap { display: none; }
-    .r-time { font-size: 12.5px; }
-    .r-task small { display: block; margin: 2px 0 0; }
-    .r-task { white-space: normal; }
-    .pill { padding: 0; width: 28px; height: 28px; justify-content: center; }
-    .pill .tx { display: none; }
-    .pill .ic { font-size: 14px; }
-
-    .run-body { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; padding: 2px 14px 16px; }
-    .field .k { margin-top: 12px; }
+    .run > summary { grid-template-columns: 18px 64px minmax(0, 1fr) auto; gap: 10px; padding: 12px 14px; min-height: 52px; }
+    .run-body { padding: 2px 14px 14px; }
+    .stack { max-width: none; }
 
     .notice { padding: 20px 16px; }
     footer { flex-direction: column; gap: 4px; margin-top: 40px; }
@@ -350,7 +339,18 @@
   function pct(a, b) { return b ? Math.round((a / b) * 100) : 0; }
   function sum(list, f) { return list.reduce(function (n, r) { return n + num(f(r)); }, 0); }
   function statusOf(r) { return STATUS[r.status] ? r.status : "complete"; }
-  function pill(st) { return '<span class="pill ' + st + '" title="' + STATUS[st].label + '"><span class="ic" aria-hidden="true">' + STATUS[st].ic + '</span><span class="tx">' + STATUS[st].label + "</span></span>"; }
+  // Short names for the run log. New tasks can log their own "short" field instead.
+  var SHORT = { "running-boomers": "Boomers" };
+  function shortName(r) { return r.short || SHORT[r.task] || r.label || r.task; }
+  function clockTight(hhmm) { return clock(hhmm).replace(/[\s\u202f]+([AP]M)$/i, "$1"); }
+  function settingRows(s) {
+    if (!s || typeof s !== "object") return "";
+    return Object.keys(s).map(function (k) {
+      var name = k === "level" ? "Level" : k.charAt(0).toUpperCase() + k.slice(1);
+      return row(name, esc(s[k]));
+    }).join("");
+  }
+  function row(k, v, cls, vcls) { return '<div class="row' + (cls ? " " + cls : "") + '"><span class="k">' + esc(k) + '</span><span class="v' + (vcls ? " " + vcls : "") + '">' + v + "</span></div>"; }
   function setSync(text, live) {
     document.getElementById("sync-text").innerHTML = text;
     document.getElementById("sync-dot").className = "dot" + (live ? "" : " wait");
@@ -680,17 +680,10 @@
     el.innerHTML = groups.map(function (g, gi) {
       var key = "day:" + g.date;
       var open = state.open[key] != null ? state.open[key] : gi === 0;
-      var done = sum(g.runs, function (r) { return r.completed; });
-      var req = sum(g.runs, function (r) { return r.requested; });
-      var fuel = sum(g.runs, fuelSpent);
-      var flags = g.runs.filter(function (r) { return statusOf(r) !== "complete"; }).length;
+      var full = g.runs.filter(function (r) { return statusOf(r) === "complete"; }).length;
       return '<details class="day" data-key="' + key + '"' + (open ? " open" : "") + ">" +
         "<summary>" + CHEV + '<span class="day-name">' + esc(dayName(g.date)) + "</span>" +
-        '<span class="day-meta"><span><b>' + g.runs.length + "</b> " + (g.runs.length === 1 ? "run" : "runs") + "</span>" +
-        "<span><b>" + done + "/" + req + "</b> done</span>" +
-        (fuel ? "<span><b>" + fuel + "</b> fuel</span>" : "") +
-        (flags ? '<span class="flag"><b>' + flags + "</b> flagged</span>" : "") +
-        "</span></summary>" +
+        '<span class="day-count' + (full < g.runs.length ? " short" : "") + '">' + full + "/" + g.runs.length + " " + (g.runs.length === 1 ? "Task" : "Tasks") + "</span></summary>" +
         '<div class="day-body">' + g.runs.map(runRow).join("") + "</div></details>";
     }).join("");
   }
@@ -702,29 +695,27 @@
     var res = r.resources && typeof r.resources === "object" ? Object.keys(r.resources).map(function (k) {
       var x = r.resources[k];
       if (!x || typeof x.before !== "number" || typeof x.after !== "number") return "";
-      return '<div class="field"><div class="k">' + esc(k) + '</div><div class="v mono">' + x.before + " → " + x.after +
-        ' <span class="spent">(−' + Math.max(0, x.before - x.after) + ")</span></div></div>";
+      return '<div class="row"><span class="k">' + esc(k) + '</span><span class="v mono">' + x.before + " → " + x.after +
+        ' <span class="spent">(−' + Math.max(0, x.before - x.after) + ")</span></span></div>";
     }).join("") : "";
-    var p = pct(num(r.completed), num(r.requested));
+    var issues = Array.isArray(r.issues) ? r.issues : [];
     return '<details class="run" data-key="' + esc(key) + '"' + (open ? " open" : "") + ">" +
       "<summary>" + CHEV +
-        '<span class="r-time">' + esc(clock(r.time)) + "</span>" +
-        '<span class="r-task">' + esc(r.label || r.task) + (settingsText(r.settings) ? "<small>" + esc(settingsText(r.settings)) + "</small>" : "") + "</span>" +
-        '<span class="r-count">' + num(r.completed) + "<small>/" + num(r.requested) + "</small></span>" +
-        '<span class="r-barwrap"><span class="r-bar" role="img" aria-label="' + p + ' percent"><i style="width:' + Math.min(100, p) + '%"></i></span></span>' +
-        pill(st) +
+        '<span class="r-time">' + esc(clockTight(r.time)) + "</span>" +
+        '<span class="r-task">' + esc(shortName(r)) + "</span>" +
+        '<span class="r-count ' + st + '">' + num(r.completed) + "/" + num(r.requested) + "</span>" +
       "</summary>" +
-      '<div class="run-body">' +
-        '<div class="field"><div class="k">Started</div><div class="v">' + esc(dayName(r.date)) + ", " + esc(clock(r.time)) + "</div></div>" +
-        '<div class="field"><div class="k">Duration</div><div class="v">' + (typeof r.minutes === "number" ? r.minutes + " min" : "—") + "</div></div>" +
-        '<div class="field"><div class="k">Settings</div><div class="v">' + (esc(settingsText(r.settings)) || "—") + "</div></div>" +
+      '<div class="run-body"><div class="stack">' +
+        row("Task", esc(r.label || r.task)) +
+        row("Status", STATUS[st].ic + " " + STATUS[st].label, "", st) +
+        row("Started", esc(dayName(r.date)) + ", " + esc(clock(r.time))) +
+        row("Duration", typeof r.minutes === "number" ? r.minutes + " min" : "—") +
+        settingRows(r.settings) +
         res +
-        '<div class="field wide"><div class="k">Issues</div>' +
-          ((Array.isArray(r.issues) && r.issues.length) ? '<ul class="issues">' + r.issues.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul>" : '<div class="none">None</div>') +
-        "</div>" +
-        (r.notes ? '<div class="field wide"><div class="k">Notes</div><div class="v">' + esc(r.notes) + "</div></div>" : "") +
-        '<div class="field wide"><div class="k">Run ID</div><div class="v mono id">' + esc(r.id || "—") + "</div></div>" +
-      "</div></details>";
+        (issues.length ? '<div class="block"><span class="k">Issues</span><ul class="issues">' + issues.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>" : row("Issues", "None")) +
+        (r.notes ? '<div class="block"><span class="k">Notes</span><div class="v">' + esc(r.notes) + "</div></div>" : "") +
+        row("Run ID", esc(r.id || "—"), "id") +
+      "</div></div></details>";
   }
 })();
 </script>

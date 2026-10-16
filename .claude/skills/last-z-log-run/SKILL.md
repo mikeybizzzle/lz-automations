@@ -26,7 +26,7 @@ If you can't reach the workspace, give the run summary in chat, say it wasn't lo
 `data/runs.js` is the log. Its first line is `window.LZ_RUNS = window.LZ_RUNS || [];` and each run after that is one line:
 
 ```js
-LZ_RUNS.push({"id":"2026-10-16T11:17-running-boomers","date":"2026-10-16","time":"11:17","task":"running-boomers","label":"Running Boomers","settings":{"level":49},"requested":10,"completed":10,"status":"complete","minutes":5,"resources":{"fuel":{"before":256,"after":96}},"issues":["1 formations-busy wait","1 misclick opened Chat"],"notes":""});
+LZ_RUNS.push({"id":"2026-10-16T11:17-running-boomers","date":"2026-10-16","time":"11:17","task":"running-boomers","label":"Running Boomers","short":"Boomers","settings":{"level":49},"requested":10,"completed":10,"status":"complete","minutes":5,"resources":{"fuel":{"before":256,"after":96}},"issues":["1 formations-busy wait","1 misclick opened Chat"],"notes":""});
 ```
 
 Field rules:
@@ -37,6 +37,7 @@ Field rules:
 | `date`, `time` | When the run **started**, in the user's local time. `YYYY-MM-DD` and 24h `HH:MM`. |
 | `task` | The task skill's slug, without the `last-z-` prefix |
 | `label` | Human name of the task |
+| `short` | One-word name for the run log rows, e.g. `Boomers` |
 | `settings` | What the user chose, e.g. `{"level":49}` |
 | `requested` | How many units the user asked for (rallies, gathers, etc.) |
 | `completed` | How many you **verified**. Never count a click as a completion. |
