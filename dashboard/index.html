@@ -67,18 +67,6 @@
   h1 span { color: var(--accent); }
   .lede { color: var(--ink-2); margin: 0; }
 
-  /* HUD stats */
-  .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
-  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 14px 16px 16px; position: relative; min-width: 0; }
-  .stat .lbl .l-short { display: none; }
-  .stat .lbl .dot { margin-left: auto; }
-  .stat .lbl { font: 11px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .stat .val { font: 26px/1.1 var(--mono); color: var(--accent); margin-top: 10px; font-variant-numeric: tabular-nums; }
-  .stat .val small { font-size: 15px; color: var(--ink-2); }
-  .stat .sub { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
-  .bar { height: 5px; background: var(--line-soft); border-radius: 3px; margin-top: 12px; overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
-
   /* Sections */
   section { margin-top: 44px; }
   .sec-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -116,36 +104,12 @@
   .tip .t-row { display: flex; justify-content: space-between; gap: 14px; color: var(--ink-2); }
   .tip .t-row b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  /* Task cards */
-  .tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 14px; align-items: start; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); padding: 16px 18px 6px; min-width: 0; }
-  .tag { font: 10.5px/1 var(--mono); letter-spacing: 0.16em; color: var(--accent); text-transform: uppercase; }
-  .card h3 { font: 700 22px/1.15 var(--display); letter-spacing: 0.04em; margin: 8px 0 4px; }
-  .state { font: 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; color: var(--ink-2); }
-  .state .dot.partial { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
-  .state .dot.failed { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
-  .kv { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 14px 0 12px; }
-  .kv div { min-width: 0; }
-  .kv dt { font: 10px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--label); }
-  .kv dd { margin: 5px 0 0; font: 18px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
-
   /* Disclosure (shared) */
   details > summary { list-style: none; cursor: pointer; }
   details > summary::-webkit-details-marker { display: none; }
   .chev { width: 18px; height: 18px; flex: none; color: var(--label); transition: transform 0.15s; }
   details[open] > summary .chev { transform: rotate(90deg); color: var(--accent); }
   @media (prefers-reduced-motion: reduce) { .chev, .tip { transition: none; } }
-
-  .intel { border-top: 1px solid var(--line-soft); }
-  .intel > summary { display: flex; align-items: center; gap: 8px; padding: 11px 0; font: 600 13px/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
-  .intel > summary:hover { color: var(--ink); }
-  .intel-body { padding: 0 0 14px; display: grid; gap: 14px; }
-  .mini-h { font: 10.5px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--label); margin-bottom: 7px; }
-  .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .mini-table td { padding: 5px 0; border-bottom: 1px solid var(--line-soft); color: var(--ink-2); font-variant-numeric: tabular-nums; }
-  .mini-table td:not(:first-child) { text-align: right; }
-  .mini-table td:first-child { color: var(--ink); }
-  .mini-table tr:last-child td { border-bottom: 0; }
 
   /* Run log */
   .days { display: grid; gap: 10px; margin-top: 12px; }
@@ -209,23 +173,10 @@
     h1 { font-size: 42px; margin: 10px 0 6px; }
     .lede { font-size: 14px; }
 
-    .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
-    .stat { padding: 12px 12px 14px; }
-    .stat .lbl .l-long { display: none; }
-    .stat .lbl .l-short { display: inline; }
-    .stat .val { font-size: 24px; margin-top: 8px; }
-    .stat .sub { font-size: 12px; }
-
     section { margin-top: 32px; }
     .sec-head { margin-bottom: 12px; }
     h2 { font-size: 22px; padding-bottom: 10px; }
     .hint { display: none; }
-
-    .card { padding: 14px 14px 4px; }
-    .card h3 { font-size: 21px; }
-    .kv { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-    .kv dd { font-size: 16px; }
-    .intel > summary { min-height: 44px; padding: 0; }
 
     /* Filters: one swipeable row per group, thumb-sized buttons */
     .filters { display: grid; gap: 10px; padding: 12px; }
@@ -261,7 +212,7 @@
     <div class="sync"><span class="dot wait" id="sync-dot"></span><span id="sync-text">Loading</span></div>
   </div>
   <nav class="jump wrap" aria-label="Sections">
-    <button data-jump="overview">Overview</button><button data-jump="tasks">Tasks</button><button data-jump="activity">Activity</button><button data-jump="log">Run log</button>
+    <button data-jump="activity">Activity</button><button data-jump="log">Run log</button>
   </nav>
 </header>
 
@@ -449,29 +400,7 @@
       return;
     }
 
-    var t0 = today();
-    var weekStart = ymd(addDays(new Date(), -6));
-    var todayRuns = runs.filter(function (r) { return r.date === t0; });
-    var weekRuns = runs.filter(function (r) { return r.date >= weekStart; });
-    var tDone = sum(todayRuns, function (r) { return r.completed; });
-    var tReq = sum(todayRuns, function (r) { return r.requested; });
-    var allDone = sum(runs, function (r) { return r.completed; });
-    var allReq = sum(runs, function (r) { return r.requested; });
-    var wFuel = sum(weekRuns, fuelSpent);
-    var wFuelRuns = weekRuns.filter(function (r) { return fuelSpent(r) > 0; }).length;
-
-    var html = '<div id="sec-overview" class="anchor">' + hero(runs.length + (runs.length === 1 ? " run" : " runs") + " logged · last run " + ago(runs[0])) + warning;
-
-    html += '<div class="hud">' +
-      stat(["Today · completed", "Today"], tDone + "<small> / " + tReq + "</small>", todayRuns.length + (todayRuns.length === 1 ? " run" : " runs") + " today", tReq ? pct(tDone, tReq) : 0) +
-      stat(["Runs · 7 days", "Runs · 7d"], weekRuns.length, sum(weekRuns, function (r) { return r.completed; }) + " completed", null) +
-      stat(["Fuel spent · 7 days", "Fuel · 7d"], wFuel, wFuelRuns ? "avg " + Math.round(wFuel / wFuelRuns) + " per run" : "no fuel logged", null) +
-      stat(["Success rate", "Success"], pct(allDone, allReq) + "<small>%</small>", allDone + " of " + allReq + " verified", pct(allDone, allReq)) +
-      "</div></div>";
-
-    html += '<section id="sec-tasks"><div class="sec-head"><h2><span class="ico">◆</span>Tasks</h2><span class="hint">Tap intel for breakdowns</span></div><div class="tasks">';
-    taskOrder.forEach(function (key, i) { html += taskCard(tasks[key], i); });
-    html += "</div></section>";
+    var html = '<div id="sec-overview" class="anchor">' + hero(runs.length + (runs.length === 1 ? " run" : " runs") + " logged · last run " + ago(runs[0])) + warning + "</div>";
 
     html += '<section id="sec-activity"><div class="sec-head"><h2><span class="ico">◆</span>Activity</h2><span class="hint">Filters apply to the chart and run log</span></div>' +
       '<div class="filters" id="filters"></div>' +
@@ -495,67 +424,6 @@
     return '<div class="hero"><div class="kicker">// Last Z · Survival Shooter</div><h1>Task <span>Ops</span></h1>' +
       (sub ? '<p class="lede">' + esc(sub) + "</p>" : "") + "</div>";
   }
-  function stat(label, value, sub, barPct) {
-    return '<div class="stat"><div class="lbl"><span class="l-long">' + esc(label[0]) + '</span><span class="l-short">' + esc(label[1]) + '</span><span class="dot"></span></div><div class="val">' + value + "</div>" +
-      '<div class="sub">' + esc(sub) + "</div>" +
-      (barPct == null ? "" : '<div class="bar" role="img" aria-label="' + barPct + ' percent"><i style="width:' + Math.min(100, barPct) + '%"></i></div>') + "</div>";
-  }
-
-  function taskCard(t, i) {
-    var last = t.runs[0];
-    var done = sum(t.runs, function (r) { return r.completed; });
-    var req = sum(t.runs, function (r) { return r.requested; });
-    var fuel = sum(t.runs, fuelSpent);
-    var mins = t.runs.filter(function (r) { return typeof r.minutes === "number"; });
-    var avgMin = mins.length ? Math.round(sum(mins, function (r) { return r.minutes; }) / mins.length) : null;
-    var st = statusOf(last);
-
-    var bySet = {};
-    t.runs.forEach(function (r) {
-      var k = settingsText(r.settings) || "Default";
-      var b = bySet[k] || (bySet[k] = { runs: 0, done: 0, req: 0 });
-      b.runs++; b.done += num(r.completed); b.req += num(r.requested);
-    });
-    var issues = {};
-    t.runs.forEach(function (r) { (Array.isArray(r.issues) ? r.issues : []).forEach(function (s) { issues[s] = (issues[s] || 0) + 1; }); });
-    var issueKeys = Object.keys(issues).sort(function (a, b) { return issues[b] - issues[a]; }).slice(0, 5);
-
-    var key = "task:" + t.key;
-    var open = state.open[key] === true;
-
-    return '<article class="card">' +
-      '<div class="tag">Task-' + String(i + 1).padStart(2, "0") + "</div>" +
-      "<h3>" + esc(t.label) + "</h3>" +
-      '<div class="state"><span class="dot ' + st + '"></span>Last run ' + STATUS[st].label.toLowerCase() + " · " + ago(last) + "</div>" +
-      '<dl class="kv">' +
-        "<div><dt>Runs</dt><dd>" + t.runs.length + "</dd></div>" +
-        "<div><dt>Done</dt><dd>" + done + "</dd></div>" +
-        "<div><dt>Success</dt><dd>" + pct(done, req) + "%</dd></div>" +
-        "<div><dt>Fuel</dt><dd>" + fuel + "</dd></div>" +
-      "</dl>" +
-      '<details class="intel" data-key="' + esc(key) + '"' + (open ? " open" : "") + ">" +
-        "<summary>" + CHEV + "Intel</summary>" +
-        '<div class="intel-body">' +
-          '<div><div class="mini-h">By setting</div><table class="mini-table"><tbody>' +
-            Object.keys(bySet).map(function (k) {
-              var b = bySet[k];
-              return "<tr><td>" + esc(k) + "</td><td>" + b.runs + " runs</td><td>" + b.done + "/" + b.req + "</td></tr>";
-            }).join("") +
-          "</tbody></table></div>" +
-          '<div><div class="mini-h">Averages</div><table class="mini-table"><tbody>' +
-            "<tr><td>Per run</td><td>" + (t.runs.length ? (done / t.runs.length).toFixed(1) : 0) + " done</td><td>" + (avgMin != null ? avgMin + " min" : "—") + "</td></tr>" +
-            "<tr><td>Fuel per unit</td><td></td><td>" + (done && fuel ? (fuel / done).toFixed(1) : "—") + "</td></tr>" +
-          "</tbody></table></div>" +
-          '<div><div class="mini-h">Common issues</div>' +
-            (issueKeys.length
-              ? '<ul class="issues">' + issueKeys.map(function (s) { return "<li>" + esc(s) + (issues[s] > 1 ? " ×" + issues[s] : "") + "</li>"; }).join("") + "</ul>"
-              : '<div class="none">None logged</div>') +
-          "</div>" +
-        "</div>" +
-      "</details>" +
-    "</article>";
-  }
-
   function renderFilters() {
     var el = document.getElementById("filters");
     function group(name, field, opts) {
