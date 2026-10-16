@@ -37,7 +37,6 @@ Either way, Claude copies the task files, creates your run log, checks that it c
 | Say | What happens |
 |---|---|
 | `run 10 boomers` | Runs 10 Stegosaurus rallies, logs the run, and notifies you |
-| `log alliance stats` | Reads your tracked alliance members' stats, updates your stats spreadsheet, and republishes your alliance page |
 | `update Last Z Tasks` | Pulls the latest task files and refreshes your claude.ai dashboard's design. Your run history is never touched. |
 | `sync the Last Z dashboard` | Copies any runs the claude.ai dashboard is missing from your log |
 | `check the Last Z run log` | Finds and fixes broken log entries |
@@ -54,21 +53,6 @@ Either way, Claude copies the task files, creates your run log, checks that it c
 | Task | Skill | Status |
 |---|---|---|
 | Running Boomers (Stegosaurus rallies) | [last-z-running-boomers](.claude/skills/last-z-running-boomers/SKILL.md) | Tested 2026-10-16: 10/10 level-49 rallies |
-| Alliance Stats (member power tracking) | [last-z-alliance-stats](.claude/skills/last-z-alliance-stats/SKILL.md) | Tested 2026-10-16: 14 R1/R2 members captured |
-
-## Alliance stats page
-
-`last-z-alliance-stats` keeps a spreadsheet of your tracked members (`data/Last Z Alliance Stats.xlsx`) with three tabs: Member Stats (every capture, with the change from the one before), Member Reference (who to track) and Summary (rankings by % change, plus a watchlist of slow growers). It also exports `alliance/data/alliance.js` for `alliance/index.html`, a page you can share with your alliance's leaders.
-
-To put the page online, make a small GitHub repo holding `index.html` and `data/alliance.js`, import it into Vercel (Framework: Other, no build command), and add it to `data/config.json`:
-
-```json
-{"alliance": {"tag": "RfC", "name": "RebornFromChaos", "state": "644"},
- "alliance_site_repo": "you/your-alliance-site",
- "alliance_site_url": "https://your-alliance-site.vercel.app"}
-```
-
-After each capture, the skill pushes the new data file to that repo and Vercel republishes the page.
 
 ## How it's built
 
@@ -80,7 +64,6 @@ Last-Z-Tasks/
     last-z-log-run/           ← shared last step: log the run, notify
     last-z-running-boomers/   ← one folder per task
   dashboard/index.html        ← the dashboard (local, and the template for claude.ai)
-  alliance/index.html         ← the alliance stats page (reads alliance/data/alliance.js)
   data/runs.js                ← your run log (stays on your computer)
   data/config.json            ← your settings, like your claude.ai dashboard link
 ```
