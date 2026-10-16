@@ -1,14 +1,14 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Last Z Tasks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* Visual style inspired by lastz.gg. Dark only, by design. */
+  /* One file, two homes:
+     - opened from the Last-Z-Tasks folder, it reads ../data/runs.js
+     - published to claude.ai, it reads the page's own database (collection "runs")
+     Visual style inspired by lastz.gg. Dark only, by design. */
   :root {
     --bg: #0d121c;
     --panel: #131a25;
@@ -40,23 +40,25 @@
       var(--bg);
     min-height: 100vh;
   }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
   button { font: inherit; color: inherit; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
   /* Top bar */
-  .topbar { border-bottom: 1px solid var(--line); background: rgba(13, 18, 28, 0.86); backdrop-filter: blur(6px); position: sticky; top: 0; z-index: 5; }
+  .topbar { border-bottom: 1px solid var(--line); background: rgba(13, 18, 28, 0.9); backdrop-filter: blur(6px); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
   .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 12px; }
-  .brand { display: flex; align-items: center; gap: 10px; font: 700 21px/1 var(--display); letter-spacing: 0.04em; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 21px/1 var(--display); letter-spacing: 0.04em; white-space: nowrap; }
   .brand svg { flex: none; }
   .brand b { color: var(--accent); font-weight: 700; }
   .sync { display: flex; align-items: center; gap: 8px; font: 12px/1 var(--mono); letter-spacing: 0.12em; color: var(--ink-2); border: 1px solid var(--line); padding: 8px 12px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+  .dot.wait { background: var(--muted); box-shadow: none; }
 
   /* Hero */
   .hero { padding: 40px 0 8px; }
   .kicker { font: 12px/1 var(--mono); letter-spacing: 0.22em; color: var(--accent); text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
   .kicker::before { content: ""; width: 22px; height: 1px; background: var(--accent); }
-  h1 { font: 700 clamp(44px, 7vw, 72px)/0.95 var(--display); letter-spacing: 0.05em; text-transform: uppercase; margin: 14px 0 10px; }
+  h1 { font: 700 clamp(44px, 7vw, 72px)/0.95 var(--display); letter-spacing: 0.05em; text-transform: uppercase; margin: 14px 0 10px; text-wrap: balance; }
   h1 span { color: var(--accent); }
   .lede { color: var(--ink-2); margin: 0; }
 
@@ -91,13 +93,16 @@
   .chart-card { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 16px 16px 10px; margin-top: 12px; position: relative; }
   .chart-title { display: flex; justify-content: space-between; gap: 10px; font: 11px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
   .chart-title b { color: var(--accent); font-weight: 400; }
-  svg.chart { display: block; width: 100%; height: 170px; overflow: visible; }
-  svg.chart text { font: 10.5px var(--mono); fill: var(--muted); }
-  svg.chart .grid { stroke: var(--line-soft); stroke-width: 1; }
-  svg.chart .base { stroke: var(--line); stroke-width: 1; }
-  svg.chart .col { fill: transparent; cursor: default; }
-  svg.chart .col:hover { fill: rgba(255,255,255,0.035); }
-  svg.chart .bar-mark { fill: var(--accent); pointer-events: none; }
+  .plot { position: relative; height: 170px; }
+  .plot svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .plot .grid { stroke: var(--line-soft); stroke-width: 1; }
+  .plot .base { stroke: var(--line); stroke-width: 1; }
+  .bars { position: absolute; inset: 0; }
+  .bm { position: absolute; bottom: 22px; transform: translateX(-50%); background: var(--accent); border-radius: 4px 4px 0 0; pointer-events: none; }
+  .hit { position: absolute; top: 0; bottom: 22px; cursor: default; }
+  .hit:hover { background: rgba(255, 255, 255, 0.04); }
+  .ylab span { position: absolute; left: 0; font: 10.5px/1 var(--mono); color: var(--muted); }
+  .xlab span { position: absolute; bottom: 2px; transform: translateX(-50%); font: 10.5px/1 var(--mono); color: var(--muted); white-space: nowrap; }
   .tip { position: absolute; pointer-events: none; background: #0a0f17; border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; padding: 8px 10px; font: 12px/1.45 var(--body); color: var(--ink); min-width: 150px; opacity: 0; transform: translate(-50%, -100%); transition: opacity 0.1s; z-index: 3; }
   .tip.on { opacity: 1; }
   .tip .t-date { font: 11px/1 var(--mono); letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
@@ -105,8 +110,8 @@
   .tip .t-row b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* Task cards */
-  .tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); padding: 16px 18px 6px; }
+  .tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 14px; align-items: start; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); padding: 16px 18px 6px; min-width: 0; }
   .tag { font: 10.5px/1 var(--mono); letter-spacing: 0.16em; color: var(--accent); text-transform: uppercase; }
   .card h3 { font: 700 22px/1.15 var(--display); letter-spacing: 0.04em; margin: 8px 0 4px; }
   .state { font: 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; color: var(--ink-2); }
@@ -122,6 +127,7 @@
   details > summary::-webkit-details-marker { display: none; }
   .chev { width: 18px; height: 18px; flex: none; color: var(--muted); transition: transform 0.15s; }
   details[open] > summary .chev { transform: rotate(90deg); color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .chev, .tip { transition: none; } }
 
   .intel { border-top: 1px solid var(--line-soft); }
   .intel > summary { display: flex; align-items: center; gap: 8px; padding: 11px 0; font: 600 13px/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
@@ -142,6 +148,7 @@
   .day-name { font: 700 18px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; min-width: 120px; }
   .day-meta { display: flex; gap: 18px; flex-wrap: wrap; font: 12px/1 var(--mono); letter-spacing: 0.08em; color: var(--ink-2); text-transform: uppercase; margin-left: auto; }
   .day-meta b { color: var(--ink); font-weight: 400; }
+  .day-meta .flag, .day-meta .flag b { color: var(--warn); }
   .day-body { border-top: 1px solid var(--line); }
 
   .run { border-bottom: 1px solid var(--line-soft); }
@@ -162,9 +169,12 @@
   .pill.failed { color: var(--bad); border-color: rgba(229,72,77,0.5); background: rgba(229,72,77,0.1); }
   .pill .ic { font-family: var(--mono); }
   .run-body { padding: 4px 16px 16px 46px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 24px; background: rgba(0,0,0,0.12); }
+  .field { min-width: 0; }
   .field .k { font: 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 10px 0 5px; }
-  .field .v { color: var(--ink); font-size: 14px; }
+  .field .v { color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
   .field .v.mono { font-family: var(--mono); font-size: 13.5px; }
+  .field .v .spent { color: var(--muted); }
+  .field .v.id { color: var(--muted); }
   .field.wide { grid-column: 1 / -1; }
   .issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
   .issues li { display: flex; gap: 8px; color: var(--ink-2); font-size: 13.5px; }
@@ -190,8 +200,7 @@
     .sync .long { display: none; }
   }
 </style>
-</head>
-<body>
+
 <header class="topbar">
   <div class="wrap">
     <div class="brand">
@@ -201,25 +210,31 @@
       </svg>
       <span>LAST Z <b>TASKS</b></span>
     </div>
-    <div class="sync" id="sync"><span class="dot"></span><span id="sync-text">Auto-sync</span></div>
+    <div class="sync"><span class="dot wait" id="sync-dot"></span><span id="sync-text">Loading</span></div>
   </div>
 </header>
 
-<main class="wrap" id="app"></main>
+<main class="wrap" id="app">
+  <div class="hero"><div class="kicker">// Last Z · Survival Shooter</div><h1>Task <span>Ops</span></h1><p class="lede">Loading your runs…</p></div>
+</main>
 
 <script>
-  window.LZ_RUNS = [];
+  // Local mode loads ../data/runs.js next. Only that file runs between this script and the
+  // main one, so any error here came from the log. (On file:// pages Chrome hides the line.)
+  window.LZ_RUNS = window.LZ_RUNS || [];
   window.LZ_LOAD_ERROR = null;
-  // Only runs.js executes between this script and the next one, so any error here came from the log.
-  // (On file:// pages Chrome hides the filename and line, so we can't check them.)
   window.LZ_ON_ERROR = function (e) { window.LZ_LOAD_ERROR = e.lineno ? " (line " + e.lineno + ")" : " "; };
-  window.addEventListener("error", window.LZ_ON_ERROR);
+  if (!window.claude) window.addEventListener("error", window.LZ_ON_ERROR);
 </script>
-<script src="../data/runs.js" onerror="window.LZ_MISSING = true"></script>
+<script>
+  // In claude.ai the page reads its database instead, so only load the local log file here.
+  if (!window.claude) document.write('<script src="../data/runs.js" onerror="window.LZ_MISSING = true"><\/script>');
+</script>
 <script>
 (function () {
   window.removeEventListener("error", window.LZ_ON_ERROR);
 
+  var CLOUD = !!window.claude;
   var app = document.getElementById("app");
   var STORE = "lz-dashboard-v2";
   var CHEV = '<svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -235,25 +250,27 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  function num(v) { return typeof v === "number" && isFinite(v) ? v : 0; }
   function ymd(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
   function parseYmd(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
-  var TODAY = ymd(new Date());
+  function today() { return ymd(new Date()); }
   function dayName(iso) {
-    if (iso === TODAY) return "Today";
+    if (iso === today()) return "Today";
     if (iso === ymd(addDays(new Date(), -1))) return "Yesterday";
     return parseYmd(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   }
   function clock(hhmm) {
-    if (!hhmm) return "—";
+    if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return "—";
     var p = hhmm.split(":"); var d = new Date(); d.setHours(+p[0], +p[1]);
     return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
+  function nowClock() { return new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }); }
   function ago(r) {
     var p = (r.time || "00:00").split(":");
-    var d = parseYmd(r.date); d.setHours(+p[0], +p[1]);
+    var d = parseYmd(r.date); d.setHours(+p[0] || 0, +p[1] || 0);
     var m = Math.round((Date.now() - d) / 60000);
     if (m < 1) return "just now";
     if (m < 60) return m + " min ago";
@@ -262,100 +279,25 @@
   }
   function fuelSpent(r) {
     var x = r.resources && r.resources.fuel;
-    return x && x.before != null && x.after != null ? Math.max(0, x.before - x.after) : 0;
+    return x && typeof x.before === "number" && typeof x.after === "number" ? Math.max(0, x.before - x.after) : 0;
   }
   function settingsText(s) {
-    if (!s) return "";
+    if (!s || typeof s !== "object") return "";
     return Object.keys(s).map(function (k) { return k === "level" ? "Lv." + s[k] : k + " " + s[k]; }).join(" · ");
   }
   function pct(a, b) { return b ? Math.round((a / b) * 100) : 0; }
-  function sum(list, f) { return list.reduce(function (n, r) { return n + (f(r) || 0); }, 0); }
+  function sum(list, f) { return list.reduce(function (n, r) { return n + num(f(r)); }, 0); }
   function statusOf(r) { return STATUS[r.status] ? r.status : "complete"; }
   function pill(st) { return '<span class="pill ' + st + '"><span class="ic">' + STATUS[st].ic + "</span>" + STATUS[st].label + "</span>"; }
+  function setSync(text, live) {
+    document.getElementById("sync-text").innerHTML = text;
+    document.getElementById("sync-dot").className = "dot" + (live ? "" : " wait");
+  }
 
   // ---------- saved view state (filters, open panels, scroll) ----------
   var state = { task: "all", status: "all", range: "14", open: {}, scroll: 0 };
   try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved) for (var k in saved) state[k] = saved[k]; } catch (e) {}
   function save() { try { state.scroll = window.scrollY; localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
-
-  document.getElementById("sync-text").innerHTML =
-    '<span class="long">Auto-sync 60s · </span>' + new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-
-  // ---------- load states ----------
-  if (window.LZ_LOAD_ERROR) {
-    app.innerHTML = '<div class="notice error">The run log (data/runs.js) has a broken line' + esc(window.LZ_LOAD_ERROR.trim() ? window.LZ_LOAD_ERROR : "") +
-      '.<br>Ask Claude to <code>check the Last Z run log</code> to fix it.</div>';
-    return;
-  }
-  if (window.LZ_MISSING) {
-    app.innerHTML = '<div class="notice">No run log yet. Ask Claude to <code>set up Last Z</code> in this folder.</div>';
-    return;
-  }
-
-  var raw = window.LZ_RUNS || [];
-  var runs = raw.filter(function (r) {
-    return r && typeof r.task === "string" && typeof r.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.date);
-  });
-  var skipped = raw.length - runs.length;
-  runs.sort(function (a, b) { return (b.date + (b.time || "")).localeCompare(a.date + (a.time || "")); });
-
-  var warning = skipped
-    ? '<div class="notice error">' + skipped + " log " + (skipped === 1 ? "entry is" : "entries are") +
-      " missing a task or date and " + (skipped === 1 ? "was" : "were") + " skipped. Ask Claude to <code>check the Last Z run log</code>.</div>"
-    : "";
-
-  if (!runs.length) {
-    app.innerHTML = hero("No runs logged yet") + warning +
-      '<div class="notice">Ask Claude to run a task, like <code>run 10 boomers</code>. It shows up here when it finishes.</div>';
-    return;
-  }
-
-  // ---------- tasks index ----------
-  var tasks = {}, taskOrder = [];
-  runs.slice().reverse().forEach(function (r) {
-    if (!tasks[r.task]) { tasks[r.task] = { key: r.task, label: r.label || r.task, runs: [] }; taskOrder.push(r.task); }
-    tasks[r.task].runs.unshift(r);
-    if (r.label) tasks[r.task].label = r.label;
-  });
-  if (state.task !== "all" && !tasks[state.task]) state.task = "all";
-
-  // ---------- static parts ----------
-  var weekStart = ymd(addDays(new Date(), -6));
-  var todayRuns = runs.filter(function (r) { return r.date === TODAY; });
-  var weekRuns = runs.filter(function (r) { return r.date >= weekStart; });
-  var tDone = sum(todayRuns, function (r) { return r.completed; });
-  var tReq = sum(todayRuns, function (r) { return r.requested; });
-  var allDone = sum(runs, function (r) { return r.completed; });
-  var allReq = sum(runs, function (r) { return r.requested; });
-  var wFuel = sum(weekRuns, fuelSpent);
-  var wFuelRuns = weekRuns.filter(function (r) { return fuelSpent(r) > 0; }).length;
-
-  var html = hero(runs.length + " runs logged · last run " + ago(runs[0])) + warning;
-
-  html += '<div class="hud">' +
-    stat("Today · completed", tDone + "<small> / " + tReq + "</small>", todayRuns.length + (todayRuns.length === 1 ? " run" : " runs") + " today", tReq ? pct(tDone, tReq) : 0) +
-    stat("Runs · 7 days", weekRuns.length, sum(weekRuns, function (r) { return r.completed; }) + " completed", null) +
-    stat("Fuel spent · 7 days", wFuel, wFuelRuns ? "avg " + Math.round(wFuel / wFuelRuns) + " per run" : "no fuel logged", null) +
-    stat("Success rate", pct(allDone, allReq) + "<small>%</small>", allDone + " of " + allReq + " verified, all time", pct(allDone, allReq)) +
-    "</div>";
-
-  // Task cards
-  html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Tasks</h2><span class="hint">Click intel for breakdowns</span></div><div class="tasks">';
-  taskOrder.forEach(function (key, i) { html += taskCard(tasks[key], i); });
-  html += "</div></section>";
-
-  // Activity + run log (filtered)
-  html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Activity</h2><span class="hint">Filters apply to the chart and run log</span></div>' +
-    '<div class="filters" id="filters"></div>' +
-    '<div class="chart-card" id="chart-card"></div></section>' +
-    '<section><div class="sec-head"><h2><span class="ico">◆</span>Run log</h2><span class="hint">Click a day or run for details</span></div>' +
-    '<div class="days" id="days"></div></section>';
-
-  html += '<footer><span>Source · data/runs.js · append-only</span><span>Style inspired by lastz.gg · fan-made, unofficial</span></footer>';
-  app.innerHTML = html;
-
-  renderFilters();
-  renderFiltered();
 
   // Remember which panels are open (toggle doesn't bubble, so capture it).
   document.addEventListener("toggle", function (e) {
@@ -364,18 +306,121 @@
     state.open[key] = e.target.open;
     save();
   }, true);
-
-  if (state.scroll) window.scrollTo(0, state.scroll);
   window.addEventListener("beforeunload", save);
-  setInterval(function () {
-    if (document.hidden) return;
-    save();
-    location.reload();
-  }, 60000);
+
+  // ---------- data sources ----------
+  var data = { runs: [], tasks: {}, taskOrder: [], skipped: 0 };
+  var firstPaint = true;
+
+  if (CLOUD) {
+    setSync('<span class="long">Connecting · </span>' + nowClock(), false);
+    window.claude.use("db").then(function (db) {
+      if (!db) {
+        notice("Your runs couldn't load here. Open this dashboard in Claude while signed in to the account that owns it.");
+        setSync("Offline", false);
+        return;
+      }
+      db.collection("runs").onSnapshot(function (snap) {
+        render(snap.docs.map(function (d) { return d.data(); }));
+        setSync('<span class="long">Live · updated </span>' + nowClock(), true);
+      }, function () {
+        setSync("Disconnected · reload", false);
+      });
+    }, function () {
+      notice("Your runs couldn't load here. Open this dashboard in Claude while signed in.");
+    });
+  } else {
+    if (window.LZ_LOAD_ERROR) {
+      notice('The run log (data/runs.js) has a broken line' + esc(window.LZ_LOAD_ERROR.trim() ? window.LZ_LOAD_ERROR : "") +
+        '.<br>Ask Claude to <code>check the Last Z run log</code> to fix it.', true);
+    } else if (window.LZ_MISSING) {
+      notice('No run log found next to this page. Open <code>dashboard/index.html</code> from your Last-Z-Tasks folder, or ask Claude to <code>set up Last Z</code>.');
+    } else {
+      render(window.LZ_RUNS || []);
+      if (state.scroll) window.scrollTo(0, state.scroll);
+    }
+    setSync('<span class="long">Auto-sync 60s · </span>' + nowClock(), !window.LZ_LOAD_ERROR && !window.LZ_MISSING);
+    // Pick up new runs: reload every minute while the tab is visible.
+    setInterval(function () { if (document.hidden) return; save(); location.reload(); }, 60000);
+  }
+
+  function notice(html, isError) {
+    app.innerHTML = hero("") + '<div class="notice' + (isError ? " error" : "") + '">' + html + "</div>";
+  }
+
+  // ---------- main render ----------
+  function render(raw) {
+    var runs = (raw || []).filter(function (r) {
+      return r && typeof r.task === "string" && typeof r.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.date);
+    });
+    var skipped = (raw || []).length - runs.length;
+    runs.sort(function (a, b) { return (b.date + (b.time || "")).localeCompare(a.date + (a.time || "")); });
+
+    var tasks = {}, taskOrder = [];
+    runs.slice().reverse().forEach(function (r) {
+      if (!tasks[r.task]) { tasks[r.task] = { key: r.task, label: r.label || r.task, runs: [] }; taskOrder.push(r.task); }
+      tasks[r.task].runs.unshift(r);
+      if (r.label) tasks[r.task].label = r.label;
+    });
+    if (state.task !== "all" && !tasks[state.task]) state.task = "all";
+    data = { runs: runs, tasks: tasks, taskOrder: taskOrder, skipped: skipped };
+
+    var warning = skipped
+      ? '<div class="notice error">' + skipped + " log " + (skipped === 1 ? "entry is" : "entries are") +
+        " missing a task or date and " + (skipped === 1 ? "was" : "were") + " skipped. Ask Claude to <code>check the Last Z run log</code>.</div>"
+      : "";
+
+    if (!runs.length) {
+      app.innerHTML = hero("No runs logged yet") + warning +
+        '<div class="notice">Ask Claude to run a task, like <code>run 10 boomers</code>. It shows up here when it finishes.</div>';
+      return;
+    }
+
+    var t0 = today();
+    var weekStart = ymd(addDays(new Date(), -6));
+    var todayRuns = runs.filter(function (r) { return r.date === t0; });
+    var weekRuns = runs.filter(function (r) { return r.date >= weekStart; });
+    var tDone = sum(todayRuns, function (r) { return r.completed; });
+    var tReq = sum(todayRuns, function (r) { return r.requested; });
+    var allDone = sum(runs, function (r) { return r.completed; });
+    var allReq = sum(runs, function (r) { return r.requested; });
+    var wFuel = sum(weekRuns, fuelSpent);
+    var wFuelRuns = weekRuns.filter(function (r) { return fuelSpent(r) > 0; }).length;
+
+    var html = hero(runs.length + (runs.length === 1 ? " run" : " runs") + " logged · last run " + ago(runs[0])) + warning;
+
+    html += '<div class="hud">' +
+      stat("Today · completed", tDone + "<small> / " + tReq + "</small>", todayRuns.length + (todayRuns.length === 1 ? " run" : " runs") + " today", tReq ? pct(tDone, tReq) : 0) +
+      stat("Runs · 7 days", weekRuns.length, sum(weekRuns, function (r) { return r.completed; }) + " completed", null) +
+      stat("Fuel spent · 7 days", wFuel, wFuelRuns ? "avg " + Math.round(wFuel / wFuelRuns) + " per run" : "no fuel logged", null) +
+      stat("Success rate", pct(allDone, allReq) + "<small>%</small>", allDone + " of " + allReq + " verified, all time", pct(allDone, allReq)) +
+      "</div>";
+
+    html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Tasks</h2><span class="hint">Tap intel for breakdowns</span></div><div class="tasks">';
+    taskOrder.forEach(function (key, i) { html += taskCard(tasks[key], i); });
+    html += "</div></section>";
+
+    html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Activity</h2><span class="hint">Filters apply to the chart and run log</span></div>' +
+      '<div class="filters" id="filters"></div>' +
+      '<div class="chart-card" id="chart-card"></div></section>' +
+      '<section><div class="sec-head"><h2><span class="ico">◆</span>Run log</h2><span class="hint">Tap a day or run for details</span></div>' +
+      '<div class="days" id="days"></div></section>';
+
+    html += "<footer><span>" + (CLOUD ? "Synced from your Last-Z-Tasks folder" : "Source · data/runs.js · append-only") +
+      "</span><span>Style inspired by lastz.gg · fan-made, unofficial</span></footer>";
+
+    var y = window.scrollY;
+    app.innerHTML = html;
+    renderFilters();
+    renderFiltered();
+    if (!firstPaint) window.scrollTo(0, y);
+    firstPaint = false;
+  }
 
   // ---------- builders ----------
   function hero(sub) {
-    return '<div class="hero"><div class="kicker">// Last Z · Survival Shooter</div><h1>Task <span>Ops</span></h1><p class="lede">' + esc(sub) + "</p></div>";
+    return '<div class="hero"><div class="kicker">// Last Z · Survival Shooter</div><h1>Task <span>Ops</span></h1>' +
+      (sub ? '<p class="lede">' + esc(sub) + "</p>" : "") + "</div>";
   }
   function stat(label, value, sub, barPct) {
     return '<div class="stat"><div class="lbl">' + esc(label) + '<span class="dot"></span></div><div class="val">' + value + "</div>" +
@@ -388,20 +433,18 @@
     var done = sum(t.runs, function (r) { return r.completed; });
     var req = sum(t.runs, function (r) { return r.requested; });
     var fuel = sum(t.runs, fuelSpent);
-    var mins = t.runs.filter(function (r) { return r.minutes != null; });
+    var mins = t.runs.filter(function (r) { return typeof r.minutes === "number"; });
     var avgMin = mins.length ? Math.round(sum(mins, function (r) { return r.minutes; }) / mins.length) : null;
     var st = statusOf(last);
 
-    // Breakdown by settings
     var bySet = {};
     t.runs.forEach(function (r) {
       var k = settingsText(r.settings) || "Default";
       var b = bySet[k] || (bySet[k] = { runs: 0, done: 0, req: 0 });
-      b.runs++; b.done += r.completed || 0; b.req += r.requested || 0;
+      b.runs++; b.done += num(r.completed); b.req += num(r.requested);
     });
-    // Common issues
     var issues = {};
-    t.runs.forEach(function (r) { (r.issues || []).forEach(function (s) { issues[s] = (issues[s] || 0) + 1; }); });
+    t.runs.forEach(function (r) { (Array.isArray(r.issues) ? r.issues : []).forEach(function (s) { issues[s] = (issues[s] || 0) + 1; }); });
     var issueKeys = Object.keys(issues).sort(function (a, b) { return issues[b] - issues[a]; }).slice(0, 5);
 
     var key = "task:" + t.key;
@@ -420,17 +463,17 @@
       '<details class="intel" data-key="' + esc(key) + '"' + (open ? " open" : "") + ">" +
         "<summary>" + CHEV + "Intel</summary>" +
         '<div class="intel-body">' +
-          "<div><div class=\"mini-h\">By setting</div><table class=\"mini-table\"><tbody>" +
+          '<div><div class="mini-h">By setting</div><table class="mini-table"><tbody>' +
             Object.keys(bySet).map(function (k) {
               var b = bySet[k];
               return "<tr><td>" + esc(k) + "</td><td>" + b.runs + " runs</td><td>" + b.done + "/" + b.req + "</td></tr>";
             }).join("") +
           "</tbody></table></div>" +
-          "<div><div class=\"mini-h\">Averages</div><table class=\"mini-table\"><tbody>" +
+          '<div><div class="mini-h">Averages</div><table class="mini-table"><tbody>' +
             "<tr><td>Per run</td><td>" + (t.runs.length ? (done / t.runs.length).toFixed(1) : 0) + " done</td><td>" + (avgMin != null ? avgMin + " min" : "—") + "</td></tr>" +
             "<tr><td>Fuel per unit</td><td></td><td>" + (done && fuel ? (fuel / done).toFixed(1) : "—") + "</td></tr>" +
           "</tbody></table></div>" +
-          "<div><div class=\"mini-h\">Common issues</div>" +
+          '<div><div class="mini-h">Common issues</div>' +
             (issueKeys.length
               ? '<ul class="issues">' + issueKeys.map(function (s) { return "<li>" + esc(s) + (issues[s] > 1 ? " ×" + issues[s] : "") + "</li>"; }).join("") + "</ul>"
               : '<div class="none">None logged</div>') +
@@ -445,12 +488,12 @@
     function group(name, field, opts) {
       return '<div class="fgroup" role="group" aria-label="' + name + '"><span>' + name + "</span>" +
         opts.map(function (o) {
-          return '<button class="chip" data-field="' + field + '" data-value="' + esc(o[0]) + '" aria-pressed="' + (state[field] === o[0]) + '">' + esc(o[1]) + "</button>";
+          return '<button class="chip" id="f-' + field + "-" + esc(o[0]) + '" data-field="' + field + '" data-value="' + esc(o[0]) + '" aria-pressed="' + (state[field] === o[0]) + '">' + esc(o[1]) + "</button>";
         }).join("") + "</div>";
     }
     el.innerHTML =
       group("Range", "range", [["7", "7D"], ["14", "14D"], ["30", "30D"], ["all", "All"]]) +
-      (taskOrder.length > 1 ? group("Task", "task", [["all", "All"]].concat(taskOrder.map(function (k) { return [k, tasks[k].label]; }))) : "") +
+      (data.taskOrder.length > 1 ? group("Task", "task", [["all", "All"]].concat(data.taskOrder.map(function (k) { return [k, data.tasks[k].label]; }))) : "") +
       group("Status", "status", [["all", "All"], ["complete", "Complete"], ["partial", "Partial"], ["failed", "Failed"]]);
     el.onclick = function (e) {
       var b = e.target.closest("button.chip"); if (!b) return;
@@ -460,9 +503,8 @@
   }
 
   function filtered() {
-    var start = null;
-    if (state.range !== "all") start = ymd(addDays(new Date(), -(+state.range - 1)));
-    return runs.filter(function (r) {
+    var start = state.range === "all" ? null : ymd(addDays(new Date(), -(+state.range - 1)));
+    return data.runs.filter(function (r) {
       return (state.task === "all" || r.task === state.task) &&
         (state.status === "all" || statusOf(r) === state.status) &&
         (!start || r.date >= start);
@@ -478,8 +520,9 @@
   function renderChart(list) {
     var card = document.getElementById("chart-card");
     var end = new Date();
+    var oldest = data.runs[data.runs.length - 1].date;
     var nDays = state.range === "all"
-      ? Math.min(90, Math.max(7, Math.round((end - parseYmd(runs[runs.length - 1].date)) / 86400000) + 1))
+      ? Math.min(90, Math.max(7, Math.round((end - parseYmd(oldest)) / 86400000) + 1))
       : +state.range;
     var days = [];
     for (var i = nDays - 1; i >= 0; i--) {
@@ -494,14 +537,14 @@
     var W = 1000, H = 170, padL = 34, padB = 22, padT = 8;
     var plotW = W - padL, plotH = H - padB - padT;
     var colW = plotW / nDays, barW = Math.max(3, Math.min(28, colW * 0.56));
-    var svg = '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="Completed units per day, last ' + nDays + ' days">';
+    var svg = '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="Completed per day, last ' + nDays + ' days">';
     [0, 0.5, 1].forEach(function (f) {
       var y = padT + plotH - plotH * f;
       svg += '<line class="' + (f === 0 ? "base" : "grid") + '" x1="' + padL + '" x2="' + W + '" y1="' + y + '" y2="' + y + '"/>';
     });
     svg += "</svg>";
 
-    // Bars and labels are positioned in HTML percentages so text never stretches.
+    // Bars and labels are HTML, positioned in percentages, so text never stretches with the SVG.
     var labels = "", bars = "", step = nDays <= 14 ? 1 : nDays <= 30 ? 3 : 7;
     days.forEach(function (d, i) {
       var cx = padL + colW * i + colW / 2;
@@ -510,8 +553,7 @@
       if (h) bars += '<div class="bm" style="left:' + left + "%;width:" + (barW / W) * 100 + "%;height:" + h + 'px"></div>';
       bars += '<div class="hit" data-i="' + i + '" style="left:' + ((padL + colW * i) / W) * 100 + "%;width:" + (colW / W) * 100 + '%"></div>';
       if ((nDays - 1 - i) % step === 0) {
-        var dt = parseYmd(d.date);
-        labels += '<span style="left:' + left + '%">' + (d.date === TODAY ? "Today" : dt.toLocaleDateString(undefined, { month: "numeric", day: "numeric" })) + "</span>";
+        labels += '<span style="left:' + left + '%">' + (d.date === today() ? "Today" : parseYmd(d.date).toLocaleDateString(undefined, { month: "numeric", day: "numeric" })) + "</span>";
       }
     });
     var yl = [0, nice / 2, nice].map(function (v, i) {
@@ -519,27 +561,30 @@
     }).join("");
 
     card.innerHTML =
-      '<div class="chart-title"><span>Completed per day · ' + (state.task === "all" ? "all tasks" : esc(tasks[state.task].label)) + "</span><span><b>" + total + "</b> in " + nDays + " days</span></div>" +
-      '<div class="plot">' + svg + '<div class="bars">' + bars + "</div>" + '<div class="ylab">' + yl + "</div>" + '<div class="xlab">' + labels + "</div></div>" +
+      '<div class="chart-title"><span>Completed per day · ' + (state.task === "all" ? "all tasks" : esc(data.tasks[state.task].label)) + "</span><span><b>" + total + "</b> in " + nDays + " days</span></div>" +
+      '<div class="plot">' + svg + '<div class="bars">' + bars + '</div><div class="ylab">' + yl + '</div><div class="xlab">' + labels + "</div></div>" +
       '<div class="tip" id="tip"></div>';
 
     var tip = document.getElementById("tip");
     var plot = card.querySelector(".plot");
-    plot.onmousemove = function (e) {
-      var hit = e.target.closest(".hit");
-      if (!hit) { tip.classList.remove("on"); return; }
+    function show(hit, clientY) {
       var d = days[+hit.getAttribute("data-i")];
       var pr = plot.getBoundingClientRect(), cr = card.getBoundingClientRect(), hr = hit.getBoundingClientRect();
       tip.innerHTML = '<div class="t-date">' + esc(dayName(d.date)) + "</div>" +
         '<div class="t-row">Completed <b>' + d.done + "</b></div>" +
         '<div class="t-row">Runs <b>' + d.runs + "</b></div>" +
         '<div class="t-row">Fuel <b>' + d.fuel + "</b></div>";
-      var x = hr.left - cr.left + hr.width / 2;
-      x = Math.max(85, Math.min(cr.width - 85, x));
+      var x = Math.max(85, Math.min(cr.width - 85, hr.left - cr.left + hr.width / 2));
       tip.style.left = x + "px";
-      tip.style.top = Math.max(pr.top - cr.top + 70, e.clientY - cr.top - 12) + "px";
+      tip.style.top = Math.max(pr.top - cr.top + 70, clientY - cr.top - 12) + "px";
       tip.classList.add("on");
+    }
+    plot.onmousemove = function (e) {
+      var hit = e.target.closest(".hit");
+      if (!hit) { tip.classList.remove("on"); return; }
+      show(hit, e.clientY);
     };
+    plot.onclick = function (e) { var hit = e.target.closest(".hit"); if (hit) show(hit, e.clientY); };
     plot.onmouseleave = function () { tip.classList.remove("on"); };
   }
 
@@ -566,7 +611,7 @@
         '<span class="day-meta"><span><b>' + g.runs.length + "</b> " + (g.runs.length === 1 ? "run" : "runs") + "</span>" +
         "<span><b>" + done + "/" + req + "</b> done</span>" +
         (fuel ? "<span><b>" + fuel + "</b> fuel</span>" : "") +
-        (flags ? '<span style="color:var(--warn)"><b style="color:var(--warn)">' + flags + "</b> flagged</span>" : "") +
+        (flags ? '<span class="flag"><b>' + flags + "</b> flagged</span>" : "") +
         "</span></summary>" +
         '<div class="day-body">' + g.runs.map(runRow).join("") + "</div></details>";
     }).join("");
@@ -576,45 +621,33 @@
     var st = statusOf(r);
     var key = "run:" + (r.id || r.date + r.time + r.task);
     var open = state.open[key] === true;
-    var fuel = r.resources && r.resources.fuel;
-    var res = r.resources ? Object.keys(r.resources).map(function (k) {
+    var res = r.resources && typeof r.resources === "object" ? Object.keys(r.resources).map(function (k) {
       var x = r.resources[k];
-      if (!x || x.before == null || x.after == null) return "";
+      if (!x || typeof x.before !== "number" || typeof x.after !== "number") return "";
       return '<div class="field"><div class="k">' + esc(k) + '</div><div class="v mono">' + x.before + " → " + x.after +
-        ' <span style="color:var(--muted)">(−' + Math.max(0, x.before - x.after) + ")</span></div></div>";
+        ' <span class="spent">(−' + Math.max(0, x.before - x.after) + ")</span></div></div>";
     }).join("") : "";
+    var p = pct(num(r.completed), num(r.requested));
     return '<details class="run" data-key="' + esc(key) + '"' + (open ? " open" : "") + ">" +
       "<summary>" + CHEV +
         '<span class="r-time">' + esc(clock(r.time)) + "</span>" +
         '<span class="r-task">' + esc(r.label || r.task) + (settingsText(r.settings) ? "<small>" + esc(settingsText(r.settings)) + "</small>" : "") + "</span>" +
-        '<span class="r-count">' + (r.completed || 0) + "<small>/" + (r.requested || 0) + "</small></span>" +
-        '<span class="r-barwrap"><span class="r-bar" role="img" aria-label="' + pct(r.completed, r.requested) + ' percent"><i style="width:' + Math.min(100, pct(r.completed, r.requested)) + '%"></i></span></span>' +
+        '<span class="r-count">' + num(r.completed) + "<small>/" + num(r.requested) + "</small></span>" +
+        '<span class="r-barwrap"><span class="r-bar" role="img" aria-label="' + p + ' percent"><i style="width:' + Math.min(100, p) + '%"></i></span></span>' +
         pill(st) +
       "</summary>" +
       '<div class="run-body">' +
         '<div class="field"><div class="k">Started</div><div class="v">' + esc(dayName(r.date)) + ", " + esc(clock(r.time)) + "</div></div>" +
-        '<div class="field"><div class="k">Duration</div><div class="v">' + (r.minutes != null ? r.minutes + " min" : "—") + "</div></div>" +
+        '<div class="field"><div class="k">Duration</div><div class="v">' + (typeof r.minutes === "number" ? r.minutes + " min" : "—") + "</div></div>" +
         '<div class="field"><div class="k">Settings</div><div class="v">' + (esc(settingsText(r.settings)) || "—") + "</div></div>" +
         res +
         '<div class="field wide"><div class="k">Issues</div>' +
-          ((r.issues && r.issues.length) ? '<ul class="issues">' + r.issues.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul>" : '<div class="none">None</div>') +
+          ((Array.isArray(r.issues) && r.issues.length) ? '<ul class="issues">' + r.issues.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul>" : '<div class="none">None</div>') +
         "</div>" +
         (r.notes ? '<div class="field wide"><div class="k">Notes</div><div class="v">' + esc(r.notes) + "</div></div>" : "") +
-        '<div class="field wide"><div class="k">Run ID</div><div class="v mono" style="color:var(--muted)">' + esc(r.id || "—") + "</div></div>" +
+        '<div class="field wide"><div class="k">Run ID</div><div class="v mono id">' + esc(r.id || "—") + "</div></div>" +
       "</div></details>";
   }
 })();
 </script>
-<style>
-  /* Chart overlay layout (bars/labels in HTML so text doesn't stretch with the SVG) */
-  .plot { position: relative; height: 170px; }
-  .plot svg { position: absolute; inset: 0; }
-  .bars { position: absolute; inset: 0; }
-  .bm { position: absolute; bottom: 22px; transform: translateX(-50%); background: var(--accent); border-radius: 4px 4px 0 0; pointer-events: none; }
-  .hit { position: absolute; top: 0; bottom: 22px; cursor: default; }
-  .hit:hover { background: rgba(255, 255, 255, 0.04); }
-  .ylab span { position: absolute; left: 0; font: 10.5px/1 var(--mono); color: var(--muted); }
-  .xlab span { position: absolute; bottom: 2px; transform: translateX(-50%); font: 10.5px/1 var(--mono); color: var(--muted); white-space: nowrap; }
-</style>
-</body>
-</html>
+</body></html>

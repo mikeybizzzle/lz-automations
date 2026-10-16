@@ -10,7 +10,8 @@ This folder automates tasks in **Last Z: Survival Shooter**. The game runs in Bl
 | `.claude/skills/last-z-log-run/` | Shared last step for every task: log the run and notify the user |
 | `.claude/skills/last-z-setup/` | First-time setup and health check |
 | `data/runs.js` | The user's run log. One `LZ_RUNS.push({...});` line per run. Git-ignored. |
-| `dashboard/index.html` | The dashboard. It reads `data/runs.js`; open it in a browser. |
+| `data/config.json` | The user's settings, including `dashboard_url` (their claude.ai dashboard). Git-ignored. |
+| `dashboard/index.html` | The dashboard template. Opened from the folder it reads `data/runs.js`; published to claude.ai (by `last-z-setup`) it reads the page's own database, which `last-z-log-run` keeps in sync. |
 
 If these skills don't load automatically (for example in a Claude Desktop chat), read the matching `SKILL.md` from this folder directly.
 
@@ -27,6 +28,7 @@ If these skills don't load automatically (for example in a Claude Desktop chat),
 - Every task run ends with `last-z-log-run`, including runs that stopped early.
 - Never spend diamonds or real money, and never accept a purchase. Stop and log the run as `partial` instead.
 - `data/runs.js` is append-only. Never rewrite or delete past runs unless the user asks.
+- `data/runs.js` is the source of truth. The claude.ai dashboard is a copy; never change runs there that aren't in the log.
 - Never commit anything in `data/`.
 
 ## Adding a task
