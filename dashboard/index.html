@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Last Z Tasks</title>
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --panel: #ffffff;
+    --ink: #1d1c1a;
+    --muted: #6b6760;
+    --line: #e2ded6;
+    --accent: #c2410c;
+    --ok: #15803d;
+    --warn: #b45309;
+    --bad: #b91c1c;
+    --chip: #f1ede6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141312;
+      --panel: #1d1c1a;
+      --ink: #f1eee8;
+      --muted: #9b968d;
+      --line: #2f2d2a;
+      --accent: #fb923c;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --bad: #f87171;
+      --chip: #2a2826;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 28px 16px 48px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+  h1 span { color: var(--accent); }
+  .updated { color: var(--muted); font-size: 13px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+  .tile .label { color: var(--muted); font-size: 12px; }
+  .tile .value { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .tile .sub { color: var(--muted); font-size: 12px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; }
+
+  .day { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }
+  .runs { display: grid; gap: 8px; }
+  .run { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--ok); border-radius: 10px; padding: 12px 14px; }
+  .run.partial { border-left-color: var(--warn); }
+  .run.failed { border-left-color: var(--bad); }
+  .run-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .run-title { font-weight: 600; }
+  .run-title .count { font-variant-numeric: tabular-nums; }
+  .run-meta { color: var(--muted); font-size: 13px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { background: var(--chip); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
+  .chip.issue { color: var(--warn); }
+  .notes { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  .empty { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 28px; text-align: center; color: var(--muted); margin-top: 20px; }
+  .empty code { background: var(--chip); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
+  .error { border-color: var(--bad); color: var(--bad); }
+
+  @media (max-width: 640px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    th.hide-sm, td.hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Last Z <span>Tasks</span></h1>
+    <div class="updated" id="updated"></div>
+  </header>
+  <div id="app"></div>
+</main>
+
+<script>
+  window.LZ_RUNS = [];
+  window.LZ_LOAD_ERROR = null;
+  // Only runs.js executes between this script and the next one, so any error here came from the log.
+  // (On file:// pages Chrome hides the filename and line, so we can't check them.)
+  window.LZ_ON_ERROR = function (e) {
+    window.LZ_LOAD_ERROR = e.lineno ? " (line " + e.lineno + ")" : " ";
+  };
+  window.addEventListener("error", window.LZ_ON_ERROR);
+</script>
+<script src="../data/runs.js" onerror="window.LZ_MISSING = true"></script>
+<script>
+(function () {
+  window.removeEventListener("error", window.LZ_ON_ERROR);
+  var app = document.getElementById("app");
+  var all = window.LZ_RUNS || [];
+  var runs = all.filter(function (r) {
+    return r && typeof r.task === "string" && typeof r.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.date);
+  });
+  var skipped = all.length - runs.length;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function localDate(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function niceDay(iso) {
+    var today = localDate(new Date());
+    var y = new Date(); y.setDate(y.getDate() - 1);
+    if (iso === today) return "Today";
+    if (iso === localDate(y)) return "Yesterday";
+    var p = iso.split("-");
+    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  }
+  function niceTime(hhmm) {
+    if (!hhmm) return "";
+    var p = hhmm.split(":");
+    var d = new Date(); d.setHours(+p[0], +p[1]);
+    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  }
+  function spent(r, key) {
+    var x = r.resources && r.resources[key];
+    if (!x || x.before == null || x.after == null) return 0;
+    return Math.max(0, x.before - x.after);
+  }
+  function settingsText(s) {
+    if (!s) return "";
+    return Object.keys(s).map(function (k) {
+      return k === "level" ? "Lv." + s[k] : k + ": " + s[k];
+    }).join(" · ");
+  }
+
+  document.getElementById("updated").textContent =
+    "Refreshed " + new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) + " · reloads every minute";
+
+  if (window.LZ_LOAD_ERROR) {
+    app.innerHTML = '<div class="empty error">The run log (data/runs.js) has a broken line' + esc(window.LZ_LOAD_ERROR.trim() ? window.LZ_LOAD_ERROR : "") +
+      '.<br>Ask Claude to "check the Last Z run log" to fix it.</div>';
+    return;
+  }
+  if (window.LZ_MISSING) {
+    app.innerHTML = '<div class="empty">No run log yet. Ask Claude to <code>set up Last Z</code> in this folder.</div>';
+    return;
+  }
+  var warning = skipped
+    ? '<div class="empty error">' + skipped + ' log ' + (skipped === 1 ? "entry is" : "entries are") +
+      ' missing a task or date and ' + (skipped === 1 ? "was" : "were") + ' skipped. Ask Claude to "check the Last Z run log".</div>'
+    : "";
+  if (!runs.length) {
+    app.innerHTML = warning + '<div class="empty">No runs logged yet. Ask Claude to run a task, like <code>run 10 boomers</code>.</div>';
+    return;
+  }
+
+  runs.sort(function (a, b) {
+    return (b.date + (b.time || "")).localeCompare(a.date + (a.time || ""));
+  });
+
+  var today = localDate(new Date());
+  var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
+  var weekStart = localDate(weekAgo);
+
+  var todayRuns = runs.filter(function (r) { return r.date === today; });
+  var weekRuns = runs.filter(function (r) { return r.date >= weekStart; });
+  var todayDone = todayRuns.reduce(function (n, r) { return n + (r.completed || 0); }, 0);
+  var weekFuel = weekRuns.reduce(function (n, r) { return n + spent(r, "fuel"); }, 0);
+  var last = runs[0];
+
+  var html = warning + '<section class="tiles">' +
+    tile("Runs today", todayRuns.length, todayDone + " completed") +
+    tile("Runs, last 7 days", weekRuns.length, runs.length + " all time") +
+    tile("Fuel spent, 7 days", weekFuel, "from logged runs") +
+    tile("Last run", (last.completed || 0) + "/" + (last.requested || 0),
+         esc(last.label || last.task) + " · " + niceDay(last.date).toLowerCase() + " " + niceTime(last.time)) +
+    "</section>";
+
+  // Per-task summary
+  var byTask = {};
+  runs.forEach(function (r) {
+    var t = byTask[r.task] || (byTask[r.task] = { label: r.label || r.task, runs: 0, done: 0, today: 0, last: r });
+    t.runs++; t.done += r.completed || 0;
+    if (r.date === today) t.today += r.completed || 0;
+  });
+  html += "<h2>By task</h2><table><thead><tr><th>Task</th><th class='num'>Today</th><th class='num'>Runs</th><th class='num'>Total completed</th><th class='hide-sm'>Last run</th></tr></thead><tbody>";
+  Object.keys(byTask).forEach(function (k) {
+    var t = byTask[k];
+    html += "<tr><td>" + esc(t.label) + "</td><td class='num'>" + t.today + "</td><td class='num'>" + t.runs +
+      "</td><td class='num'>" + t.done + "</td><td class='hide-sm'>" + niceDay(t.last.date) + " " + niceTime(t.last.time) + "</td></tr>";
+  });
+  html += "</tbody></table>";
+
+  // Recent runs grouped by day
+  html += "<h2>Recent runs</h2>";
+  var shown = runs.slice(0, 60), currentDay = null;
+  shown.forEach(function (r) {
+    if (r.date !== currentDay) {
+      if (currentDay !== null) html += "</div>";
+      currentDay = r.date;
+      html += '<div class="day">' + niceDay(r.date) + '</div><div class="runs">';
+    }
+    var status = r.status || "complete";
+    var meta = [niceTime(r.time)];
+    if (r.minutes != null) meta.push(r.minutes + " min");
+    var chips = [];
+    var st = settingsText(r.settings); if (st) chips.push('<span class="chip">' + esc(st) + "</span>");
+    if (r.resources) Object.keys(r.resources).forEach(function (k) {
+      var x = r.resources[k];
+      if (x && x.before != null && x.after != null) chips.push('<span class="chip">' + esc(k) + " " + x.before + " → " + x.after + "</span>");
+    });
+    (r.issues || []).forEach(function (i) { chips.push('<span class="chip issue">' + esc(i) + "</span>"); });
+
+    html += '<div class="run ' + esc(status) + '"><div class="run-top"><div class="run-title">' + esc(r.label || r.task) +
+      ' <span class="count">' + (r.completed || 0) + "/" + (r.requested || 0) + "</span>" +
+      (status !== "complete" ? ' <span class="run-meta">· ' + esc(status) + "</span>" : "") +
+      '</div><div class="run-meta">' + meta.join(" · ") + "</div></div>" +
+      (chips.length ? '<div class="chips">' + chips.join("") + "</div>" : "") +
+      (r.notes ? '<div class="notes">' + esc(r.notes) + "</div>" : "") + "</div>";
+  });
+  if (currentDay !== null) html += "</div>";
+
+  app.innerHTML = html;
+
+  function tile(label, value, sub) {
+    return '<div class="tile"><div class="label">' + label + '</div><div class="value">' + value +
+      '</div><div class="sub">' + sub + "</div></div>";
+  }
+})();
+
+// Pick up new runs: reload every minute while the tab is visible.
+setInterval(function () { if (!document.hidden) location.reload(); }, 60000);
+</script>
+</body>
+</html>
