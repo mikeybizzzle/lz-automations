@@ -4,244 +4,617 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Last Z Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  /* Visual style inspired by lastz.gg. Dark only, by design. */
   :root {
-    --bg: #f4f2ee;
-    --panel: #ffffff;
-    --ink: #1d1c1a;
-    --muted: #6b6760;
-    --line: #e2ded6;
-    --accent: #c2410c;
-    --ok: #15803d;
-    --warn: #b45309;
-    --bad: #b91c1c;
-    --chip: #f1ede6;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #141312;
-      --panel: #1d1c1a;
-      --ink: #f1eee8;
-      --muted: #9b968d;
-      --line: #2f2d2a;
-      --accent: #fb923c;
-      --ok: #4ade80;
-      --warn: #fbbf24;
-      --bad: #f87171;
-      --chip: #2a2826;
-    }
+    --bg: #0d121c;
+    --panel: #131a25;
+    --panel-2: #18212f;
+    --line: #283448;
+    --line-soft: #1f2938;
+    --ink: #f3efe8;
+    --ink-2: #b9b4ab;
+    --muted: #7d8696;
+    --accent: #e55806;
+    --accent-soft: rgba(229, 88, 6, 0.14);
+    --ok: #38946b;
+    --warn: #e0a23a;
+    --bad: #e5484d;
+    --display: "Rajdhani", "Barlow Condensed", "Arial Narrow", sans-serif;
+    --mono: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --body: "Mulish", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color-scheme: dark;
   }
   * { box-sizing: border-box; }
+  html { background: var(--bg); }
   body {
     margin: 0;
-    background: var(--bg);
     color: var(--ink);
-    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font: 15px/1.5 var(--body);
+    background:
+      radial-gradient(900px 420px at 85% -120px, rgba(229, 88, 6, 0.16), transparent 70%),
+      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px) 0 0 / 100% 4px,
+      var(--bg);
+    min-height: 100vh;
   }
-  main { max-width: 960px; margin: 0 auto; padding: 28px 16px 48px; }
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+  button { font: inherit; color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+  /* Top bar */
+  .topbar { border-bottom: 1px solid var(--line); background: rgba(13, 18, 28, 0.86); backdrop-filter: blur(6px); position: sticky; top: 0; z-index: 5; }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 21px/1 var(--display); letter-spacing: 0.04em; }
+  .brand svg { flex: none; }
+  .brand b { color: var(--accent); font-weight: 700; }
+  .sync { display: flex; align-items: center; gap: 8px; font: 12px/1 var(--mono); letter-spacing: 0.12em; color: var(--ink-2); border: 1px solid var(--line); padding: 8px 12px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+
+  /* Hero */
+  .hero { padding: 40px 0 8px; }
+  .kicker { font: 12px/1 var(--mono); letter-spacing: 0.22em; color: var(--accent); text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+  .kicker::before { content: ""; width: 22px; height: 1px; background: var(--accent); }
+  h1 { font: 700 clamp(44px, 7vw, 72px)/0.95 var(--display); letter-spacing: 0.05em; text-transform: uppercase; margin: 14px 0 10px; }
   h1 span { color: var(--accent); }
-  .updated { color: var(--muted); font-size: 13px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 32px 0 10px; }
+  .lede { color: var(--ink-2); margin: 0; }
 
-  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
-  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
-  .tile .label { color: var(--muted); font-size: 12px; }
-  .tile .value { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
-  .tile .sub { color: var(--muted); font-size: 12px; }
+  /* HUD stats */
+  .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 14px 16px 16px; position: relative; min-width: 0; }
+  .stat .lbl { font: 11px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .stat .val { font: 26px/1.1 var(--mono); color: var(--accent); margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .stat .val small { font-size: 15px; color: var(--muted); }
+  .stat .sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .bar { height: 5px; background: var(--line-soft); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
 
-  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
-  th { font-size: 12px; color: var(--muted); font-weight: 600; }
-  tr:last-child td { border-bottom: 0; }
-  td.num, th.num { text-align: right; }
+  /* Sections */
+  section { margin-top: 44px; }
+  .sec-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  h2 { font: 700 24px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; margin: 0; padding-bottom: 12px; position: relative; display: flex; align-items: center; gap: 10px; }
+  h2::after { content: ""; position: absolute; left: 0; bottom: 0; width: 38px; height: 3px; background: var(--accent); }
+  h2 .ico { color: var(--accent); font-size: 18px; }
+  .hint { font: 11.5px/1 var(--mono); letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
 
-  .day { font-size: 13px; font-weight: 600; margin: 18px 0 6px; }
-  .runs { display: grid; gap: 8px; }
-  .run { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--ok); border-radius: 10px; padding: 12px 14px; }
-  .run.partial { border-left-color: var(--warn); }
-  .run.failed { border-left-color: var(--bad); }
-  .run-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .run-title { font-weight: 600; }
-  .run-title .count { font-variant-numeric: tabular-nums; }
-  .run-meta { color: var(--muted); font-size: 13px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .chip { background: var(--chip); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
-  .chip.issue { color: var(--warn); }
-  .notes { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  /* Filters */
+  .filters { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; }
+  .fgroup { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .fgroup > span { font: 11px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+  .chip { font: 600 13px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid var(--line); border-radius: 3px; padding: 7px 11px; cursor: pointer; color: var(--ink-2); }
+  .chip:hover { border-color: var(--accent); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .empty { background: var(--panel); border: 1px dashed var(--line); border-radius: 10px; padding: 28px; text-align: center; color: var(--muted); margin-top: 20px; }
-  .empty code { background: var(--chip); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
-  .error { border-color: var(--bad); color: var(--bad); }
+  /* Activity chart */
+  .chart-card { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 16px 16px 10px; margin-top: 12px; position: relative; }
+  .chart-title { display: flex; justify-content: space-between; gap: 10px; font: 11px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
+  .chart-title b { color: var(--accent); font-weight: 400; }
+  svg.chart { display: block; width: 100%; height: 170px; overflow: visible; }
+  svg.chart text { font: 10.5px var(--mono); fill: var(--muted); }
+  svg.chart .grid { stroke: var(--line-soft); stroke-width: 1; }
+  svg.chart .base { stroke: var(--line); stroke-width: 1; }
+  svg.chart .col { fill: transparent; cursor: default; }
+  svg.chart .col:hover { fill: rgba(255,255,255,0.035); }
+  svg.chart .bar-mark { fill: var(--accent); pointer-events: none; }
+  .tip { position: absolute; pointer-events: none; background: #0a0f17; border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; padding: 8px 10px; font: 12px/1.45 var(--body); color: var(--ink); min-width: 150px; opacity: 0; transform: translate(-50%, -100%); transition: opacity 0.1s; z-index: 3; }
+  .tip.on { opacity: 1; }
+  .tip .t-date { font: 11px/1 var(--mono); letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
+  .tip .t-row { display: flex; justify-content: space-between; gap: 14px; color: var(--ink-2); }
+  .tip .t-row b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  @media (max-width: 640px) {
-    .tiles { grid-template-columns: repeat(2, 1fr); }
-    th.hide-sm, td.hide-sm { display: none; }
+  /* Task cards */
+  .tasks { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); padding: 16px 18px 6px; }
+  .tag { font: 10.5px/1 var(--mono); letter-spacing: 0.16em; color: var(--accent); text-transform: uppercase; }
+  .card h3 { font: 700 22px/1.15 var(--display); letter-spacing: 0.04em; margin: 8px 0 4px; }
+  .state { font: 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; color: var(--ink-2); }
+  .state .dot.partial { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+  .state .dot.failed { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
+  .kv { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 14px 0 12px; }
+  .kv div { min-width: 0; }
+  .kv dt { font: 10px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .kv dd { margin: 5px 0 0; font: 18px/1 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* Disclosure (shared) */
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  .chev { width: 18px; height: 18px; flex: none; color: var(--muted); transition: transform 0.15s; }
+  details[open] > summary .chev { transform: rotate(90deg); color: var(--accent); }
+
+  .intel { border-top: 1px solid var(--line-soft); }
+  .intel > summary { display: flex; align-items: center; gap: 8px; padding: 11px 0; font: 600 13px/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+  .intel > summary:hover { color: var(--ink); }
+  .intel-body { padding: 0 0 14px; display: grid; gap: 14px; }
+  .mini-h { font: 10.5px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .mini-table td { padding: 5px 0; border-bottom: 1px solid var(--line-soft); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .mini-table td:not(:first-child) { text-align: right; }
+  .mini-table td:first-child { color: var(--ink); }
+  .mini-table tr:last-child td { border-bottom: 0; }
+
+  /* Run log */
+  .days { display: grid; gap: 10px; margin-top: 12px; }
+  .day { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; }
+  .day > summary { display: flex; align-items: center; gap: 12px; padding: 13px 16px; flex-wrap: wrap; }
+  .day > summary:hover { background: var(--panel-2); }
+  .day-name { font: 700 18px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; min-width: 120px; }
+  .day-meta { display: flex; gap: 18px; flex-wrap: wrap; font: 12px/1 var(--mono); letter-spacing: 0.08em; color: var(--ink-2); text-transform: uppercase; margin-left: auto; }
+  .day-meta b { color: var(--ink); font-weight: 400; }
+  .day-body { border-top: 1px solid var(--line); }
+
+  .run { border-bottom: 1px solid var(--line-soft); }
+  .run:last-child { border-bottom: 0; }
+  .run > summary { display: grid; grid-template-columns: 18px 70px minmax(0, 1.4fr) 92px minmax(110px, 1fr) 118px; align-items: center; gap: 12px; padding: 11px 16px; }
+  .run > summary:hover { background: var(--panel-2); }
+  .r-time { font: 13px/1 var(--mono); color: var(--ink-2); }
+  .r-task { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .r-task small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .r-count { font: 15px/1 var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .r-count small { color: var(--muted); }
+  .r-barwrap { display: block; }
+  .r-bar { display: block; height: 5px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+  .r-bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .pill { justify-self: end; display: inline-flex; align-items: center; gap: 6px; font: 600 12px/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 9px; border-radius: 3px; border: 1px solid; white-space: nowrap; }
+  .pill.complete { color: var(--ok); border-color: rgba(56,148,107,0.5); background: rgba(56,148,107,0.1); }
+  .pill.partial { color: var(--warn); border-color: rgba(224,162,58,0.5); background: rgba(224,162,58,0.1); }
+  .pill.failed { color: var(--bad); border-color: rgba(229,72,77,0.5); background: rgba(229,72,77,0.1); }
+  .pill .ic { font-family: var(--mono); }
+  .run-body { padding: 4px 16px 16px 46px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 24px; background: rgba(0,0,0,0.12); }
+  .field .k { font: 10.5px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 10px 0 5px; }
+  .field .v { color: var(--ink); font-size: 14px; }
+  .field .v.mono { font-family: var(--mono); font-size: 13.5px; }
+  .field.wide { grid-column: 1 / -1; }
+  .issues { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+  .issues li { display: flex; gap: 8px; color: var(--ink-2); font-size: 13.5px; }
+  .issues li::before { content: "▲"; color: var(--warn); font-size: 9px; line-height: 20px; }
+  .none { color: var(--muted); font-size: 13.5px; }
+
+  /* States */
+  .notice { background: var(--panel); border: 1px dashed var(--line); border-radius: 3px; padding: 26px; text-align: center; color: var(--ink-2); margin-top: 26px; }
+  .notice code { font-family: var(--mono); color: var(--accent); background: var(--accent-soft); padding: 2px 7px; border-radius: 3px; }
+  .notice.error { border-color: var(--bad); color: #f2b8ba; }
+  .empty-filter { padding: 22px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: 3px; }
+
+  footer { margin: 56px 0 28px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font: 11px/1.6 var(--mono); letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+
+  @media (max-width: 760px) {
+    .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .run > summary { grid-template-columns: 18px 58px minmax(0, 1fr) auto; }
+    .r-barwrap { display: none; }
+    .run > summary .pill { grid-column: 3 / 5; justify-self: start; }
+    .run-body { padding-left: 16px; }
+    .day-meta { margin-left: 0; width: 100%; }
+    .kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sync .long { display: none; }
   }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>Last Z <span>Tasks</span></h1>
-    <div class="updated" id="updated"></div>
-  </header>
-  <div id="app"></div>
-</main>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <rect x="3" y="3" width="20" height="20" rx="2" fill="none" stroke="#e55806" stroke-width="2"/>
+        <path d="M8 9h10l-10 8h10" fill="none" stroke="#f3efe8" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <span>LAST Z <b>TASKS</b></span>
+    </div>
+    <div class="sync" id="sync"><span class="dot"></span><span id="sync-text">Auto-sync</span></div>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
 
 <script>
   window.LZ_RUNS = [];
   window.LZ_LOAD_ERROR = null;
   // Only runs.js executes between this script and the next one, so any error here came from the log.
   // (On file:// pages Chrome hides the filename and line, so we can't check them.)
-  window.LZ_ON_ERROR = function (e) {
-    window.LZ_LOAD_ERROR = e.lineno ? " (line " + e.lineno + ")" : " ";
-  };
+  window.LZ_ON_ERROR = function (e) { window.LZ_LOAD_ERROR = e.lineno ? " (line " + e.lineno + ")" : " "; };
   window.addEventListener("error", window.LZ_ON_ERROR);
 </script>
 <script src="../data/runs.js" onerror="window.LZ_MISSING = true"></script>
 <script>
 (function () {
   window.removeEventListener("error", window.LZ_ON_ERROR);
-  var app = document.getElementById("app");
-  var all = window.LZ_RUNS || [];
-  var runs = all.filter(function (r) {
-    return r && typeof r.task === "string" && typeof r.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.date);
-  });
-  var skipped = all.length - runs.length;
 
+  var app = document.getElementById("app");
+  var STORE = "lz-dashboard-v2";
+  var CHEV = '<svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var STATUS = {
+    complete: { ic: "✓", label: "Complete" },
+    partial: { ic: "◐", label: "Partial" },
+    failed: { ic: "✕", label: "Failed" }
+  };
+
+  // ---------- helpers ----------
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  function localDate(d) {
+  function ymd(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
-  function niceDay(iso) {
-    var today = localDate(new Date());
-    var y = new Date(); y.setDate(y.getDate() - 1);
-    if (iso === today) return "Today";
-    if (iso === localDate(y)) return "Yesterday";
-    var p = iso.split("-");
-    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  function parseYmd(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  var TODAY = ymd(new Date());
+  function dayName(iso) {
+    if (iso === TODAY) return "Today";
+    if (iso === ymd(addDays(new Date(), -1))) return "Yesterday";
+    return parseYmd(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   }
-  function niceTime(hhmm) {
-    if (!hhmm) return "";
-    var p = hhmm.split(":");
-    var d = new Date(); d.setHours(+p[0], +p[1]);
+  function clock(hhmm) {
+    if (!hhmm) return "—";
+    var p = hhmm.split(":"); var d = new Date(); d.setHours(+p[0], +p[1]);
     return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
-  function spent(r, key) {
-    var x = r.resources && r.resources[key];
-    if (!x || x.before == null || x.after == null) return 0;
-    return Math.max(0, x.before - x.after);
+  function ago(r) {
+    var p = (r.time || "00:00").split(":");
+    var d = parseYmd(r.date); d.setHours(+p[0], +p[1]);
+    var m = Math.round((Date.now() - d) / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return m + " min ago";
+    if (m < 1440) return Math.round(m / 60) + " h ago";
+    return Math.round(m / 1440) + " d ago";
+  }
+  function fuelSpent(r) {
+    var x = r.resources && r.resources.fuel;
+    return x && x.before != null && x.after != null ? Math.max(0, x.before - x.after) : 0;
   }
   function settingsText(s) {
     if (!s) return "";
-    return Object.keys(s).map(function (k) {
-      return k === "level" ? "Lv." + s[k] : k + ": " + s[k];
-    }).join(" · ");
+    return Object.keys(s).map(function (k) { return k === "level" ? "Lv." + s[k] : k + " " + s[k]; }).join(" · ");
   }
+  function pct(a, b) { return b ? Math.round((a / b) * 100) : 0; }
+  function sum(list, f) { return list.reduce(function (n, r) { return n + (f(r) || 0); }, 0); }
+  function statusOf(r) { return STATUS[r.status] ? r.status : "complete"; }
+  function pill(st) { return '<span class="pill ' + st + '"><span class="ic">' + STATUS[st].ic + "</span>" + STATUS[st].label + "</span>"; }
 
-  document.getElementById("updated").textContent =
-    "Refreshed " + new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) + " · reloads every minute";
+  // ---------- saved view state (filters, open panels, scroll) ----------
+  var state = { task: "all", status: "all", range: "14", open: {}, scroll: 0 };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved) for (var k in saved) state[k] = saved[k]; } catch (e) {}
+  function save() { try { state.scroll = window.scrollY; localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
 
+  document.getElementById("sync-text").innerHTML =
+    '<span class="long">Auto-sync 60s · </span>' + new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+
+  // ---------- load states ----------
   if (window.LZ_LOAD_ERROR) {
-    app.innerHTML = '<div class="empty error">The run log (data/runs.js) has a broken line' + esc(window.LZ_LOAD_ERROR.trim() ? window.LZ_LOAD_ERROR : "") +
-      '.<br>Ask Claude to "check the Last Z run log" to fix it.</div>';
+    app.innerHTML = '<div class="notice error">The run log (data/runs.js) has a broken line' + esc(window.LZ_LOAD_ERROR.trim() ? window.LZ_LOAD_ERROR : "") +
+      '.<br>Ask Claude to <code>check the Last Z run log</code> to fix it.</div>';
     return;
   }
   if (window.LZ_MISSING) {
-    app.innerHTML = '<div class="empty">No run log yet. Ask Claude to <code>set up Last Z</code> in this folder.</div>';
+    app.innerHTML = '<div class="notice">No run log yet. Ask Claude to <code>set up Last Z</code> in this folder.</div>';
     return;
   }
+
+  var raw = window.LZ_RUNS || [];
+  var runs = raw.filter(function (r) {
+    return r && typeof r.task === "string" && typeof r.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.date);
+  });
+  var skipped = raw.length - runs.length;
+  runs.sort(function (a, b) { return (b.date + (b.time || "")).localeCompare(a.date + (a.time || "")); });
+
   var warning = skipped
-    ? '<div class="empty error">' + skipped + ' log ' + (skipped === 1 ? "entry is" : "entries are") +
-      ' missing a task or date and ' + (skipped === 1 ? "was" : "were") + ' skipped. Ask Claude to "check the Last Z run log".</div>'
+    ? '<div class="notice error">' + skipped + " log " + (skipped === 1 ? "entry is" : "entries are") +
+      " missing a task or date and " + (skipped === 1 ? "was" : "were") + " skipped. Ask Claude to <code>check the Last Z run log</code>.</div>"
     : "";
+
   if (!runs.length) {
-    app.innerHTML = warning + '<div class="empty">No runs logged yet. Ask Claude to run a task, like <code>run 10 boomers</code>.</div>';
+    app.innerHTML = hero("No runs logged yet") + warning +
+      '<div class="notice">Ask Claude to run a task, like <code>run 10 boomers</code>. It shows up here when it finishes.</div>';
     return;
   }
 
-  runs.sort(function (a, b) {
-    return (b.date + (b.time || "")).localeCompare(a.date + (a.time || ""));
+  // ---------- tasks index ----------
+  var tasks = {}, taskOrder = [];
+  runs.slice().reverse().forEach(function (r) {
+    if (!tasks[r.task]) { tasks[r.task] = { key: r.task, label: r.label || r.task, runs: [] }; taskOrder.push(r.task); }
+    tasks[r.task].runs.unshift(r);
+    if (r.label) tasks[r.task].label = r.label;
   });
+  if (state.task !== "all" && !tasks[state.task]) state.task = "all";
 
-  var today = localDate(new Date());
-  var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6);
-  var weekStart = localDate(weekAgo);
-
-  var todayRuns = runs.filter(function (r) { return r.date === today; });
+  // ---------- static parts ----------
+  var weekStart = ymd(addDays(new Date(), -6));
+  var todayRuns = runs.filter(function (r) { return r.date === TODAY; });
   var weekRuns = runs.filter(function (r) { return r.date >= weekStart; });
-  var todayDone = todayRuns.reduce(function (n, r) { return n + (r.completed || 0); }, 0);
-  var weekFuel = weekRuns.reduce(function (n, r) { return n + spent(r, "fuel"); }, 0);
-  var last = runs[0];
+  var tDone = sum(todayRuns, function (r) { return r.completed; });
+  var tReq = sum(todayRuns, function (r) { return r.requested; });
+  var allDone = sum(runs, function (r) { return r.completed; });
+  var allReq = sum(runs, function (r) { return r.requested; });
+  var wFuel = sum(weekRuns, fuelSpent);
+  var wFuelRuns = weekRuns.filter(function (r) { return fuelSpent(r) > 0; }).length;
 
-  var html = warning + '<section class="tiles">' +
-    tile("Runs today", todayRuns.length, todayDone + " completed") +
-    tile("Runs, last 7 days", weekRuns.length, runs.length + " all time") +
-    tile("Fuel spent, 7 days", weekFuel, "from logged runs") +
-    tile("Last run", (last.completed || 0) + "/" + (last.requested || 0),
-         esc(last.label || last.task) + " · " + niceDay(last.date).toLowerCase() + " " + niceTime(last.time)) +
-    "</section>";
+  var html = hero(runs.length + " runs logged · last run " + ago(runs[0])) + warning;
 
-  // Per-task summary
-  var byTask = {};
-  runs.forEach(function (r) {
-    var t = byTask[r.task] || (byTask[r.task] = { label: r.label || r.task, runs: 0, done: 0, today: 0, last: r });
-    t.runs++; t.done += r.completed || 0;
-    if (r.date === today) t.today += r.completed || 0;
-  });
-  html += "<h2>By task</h2><table><thead><tr><th>Task</th><th class='num'>Today</th><th class='num'>Runs</th><th class='num'>Total completed</th><th class='hide-sm'>Last run</th></tr></thead><tbody>";
-  Object.keys(byTask).forEach(function (k) {
-    var t = byTask[k];
-    html += "<tr><td>" + esc(t.label) + "</td><td class='num'>" + t.today + "</td><td class='num'>" + t.runs +
-      "</td><td class='num'>" + t.done + "</td><td class='hide-sm'>" + niceDay(t.last.date) + " " + niceTime(t.last.time) + "</td></tr>";
-  });
-  html += "</tbody></table>";
+  html += '<div class="hud">' +
+    stat("Today · completed", tDone + "<small> / " + tReq + "</small>", todayRuns.length + (todayRuns.length === 1 ? " run" : " runs") + " today", tReq ? pct(tDone, tReq) : 0) +
+    stat("Runs · 7 days", weekRuns.length, sum(weekRuns, function (r) { return r.completed; }) + " completed", null) +
+    stat("Fuel spent · 7 days", wFuel, wFuelRuns ? "avg " + Math.round(wFuel / wFuelRuns) + " per run" : "no fuel logged", null) +
+    stat("Success rate", pct(allDone, allReq) + "<small>%</small>", allDone + " of " + allReq + " verified, all time", pct(allDone, allReq)) +
+    "</div>";
 
-  // Recent runs grouped by day
-  html += "<h2>Recent runs</h2>";
-  var shown = runs.slice(0, 60), currentDay = null;
-  shown.forEach(function (r) {
-    if (r.date !== currentDay) {
-      if (currentDay !== null) html += "</div>";
-      currentDay = r.date;
-      html += '<div class="day">' + niceDay(r.date) + '</div><div class="runs">';
-    }
-    var status = r.status || "complete";
-    var meta = [niceTime(r.time)];
-    if (r.minutes != null) meta.push(r.minutes + " min");
-    var chips = [];
-    var st = settingsText(r.settings); if (st) chips.push('<span class="chip">' + esc(st) + "</span>");
-    if (r.resources) Object.keys(r.resources).forEach(function (k) {
-      var x = r.resources[k];
-      if (x && x.before != null && x.after != null) chips.push('<span class="chip">' + esc(k) + " " + x.before + " → " + x.after + "</span>");
-    });
-    (r.issues || []).forEach(function (i) { chips.push('<span class="chip issue">' + esc(i) + "</span>"); });
+  // Task cards
+  html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Tasks</h2><span class="hint">Click intel for breakdowns</span></div><div class="tasks">';
+  taskOrder.forEach(function (key, i) { html += taskCard(tasks[key], i); });
+  html += "</div></section>";
 
-    html += '<div class="run ' + esc(status) + '"><div class="run-top"><div class="run-title">' + esc(r.label || r.task) +
-      ' <span class="count">' + (r.completed || 0) + "/" + (r.requested || 0) + "</span>" +
-      (status !== "complete" ? ' <span class="run-meta">· ' + esc(status) + "</span>" : "") +
-      '</div><div class="run-meta">' + meta.join(" · ") + "</div></div>" +
-      (chips.length ? '<div class="chips">' + chips.join("") + "</div>" : "") +
-      (r.notes ? '<div class="notes">' + esc(r.notes) + "</div>" : "") + "</div>";
-  });
-  if (currentDay !== null) html += "</div>";
+  // Activity + run log (filtered)
+  html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Activity</h2><span class="hint">Filters apply to the chart and run log</span></div>' +
+    '<div class="filters" id="filters"></div>' +
+    '<div class="chart-card" id="chart-card"></div></section>' +
+    '<section><div class="sec-head"><h2><span class="ico">◆</span>Run log</h2><span class="hint">Click a day or run for details</span></div>' +
+    '<div class="days" id="days"></div></section>';
 
+  html += '<footer><span>Source · data/runs.js · append-only</span><span>Style inspired by lastz.gg · fan-made, unofficial</span></footer>';
   app.innerHTML = html;
 
-  function tile(label, value, sub) {
-    return '<div class="tile"><div class="label">' + label + '</div><div class="value">' + value +
-      '</div><div class="sub">' + sub + "</div></div>";
+  renderFilters();
+  renderFiltered();
+
+  // Remember which panels are open (toggle doesn't bubble, so capture it).
+  document.addEventListener("toggle", function (e) {
+    var key = e.target && e.target.getAttribute && e.target.getAttribute("data-key");
+    if (!key) return;
+    state.open[key] = e.target.open;
+    save();
+  }, true);
+
+  if (state.scroll) window.scrollTo(0, state.scroll);
+  window.addEventListener("beforeunload", save);
+  setInterval(function () {
+    if (document.hidden) return;
+    save();
+    location.reload();
+  }, 60000);
+
+  // ---------- builders ----------
+  function hero(sub) {
+    return '<div class="hero"><div class="kicker">// Last Z · Survival Shooter</div><h1>Task <span>Ops</span></h1><p class="lede">' + esc(sub) + "</p></div>";
+  }
+  function stat(label, value, sub, barPct) {
+    return '<div class="stat"><div class="lbl">' + esc(label) + '<span class="dot"></span></div><div class="val">' + value + "</div>" +
+      '<div class="sub">' + esc(sub) + "</div>" +
+      (barPct == null ? "" : '<div class="bar" role="img" aria-label="' + barPct + ' percent"><i style="width:' + Math.min(100, barPct) + '%"></i></div>') + "</div>";
+  }
+
+  function taskCard(t, i) {
+    var last = t.runs[0];
+    var done = sum(t.runs, function (r) { return r.completed; });
+    var req = sum(t.runs, function (r) { return r.requested; });
+    var fuel = sum(t.runs, fuelSpent);
+    var mins = t.runs.filter(function (r) { return r.minutes != null; });
+    var avgMin = mins.length ? Math.round(sum(mins, function (r) { return r.minutes; }) / mins.length) : null;
+    var st = statusOf(last);
+
+    // Breakdown by settings
+    var bySet = {};
+    t.runs.forEach(function (r) {
+      var k = settingsText(r.settings) || "Default";
+      var b = bySet[k] || (bySet[k] = { runs: 0, done: 0, req: 0 });
+      b.runs++; b.done += r.completed || 0; b.req += r.requested || 0;
+    });
+    // Common issues
+    var issues = {};
+    t.runs.forEach(function (r) { (r.issues || []).forEach(function (s) { issues[s] = (issues[s] || 0) + 1; }); });
+    var issueKeys = Object.keys(issues).sort(function (a, b) { return issues[b] - issues[a]; }).slice(0, 5);
+
+    var key = "task:" + t.key;
+    var open = state.open[key] === true;
+
+    return '<article class="card">' +
+      '<div class="tag">Task-' + String(i + 1).padStart(2, "0") + "</div>" +
+      "<h3>" + esc(t.label) + "</h3>" +
+      '<div class="state"><span class="dot ' + st + '"></span>Last run ' + STATUS[st].label.toLowerCase() + " · " + ago(last) + "</div>" +
+      '<dl class="kv">' +
+        "<div><dt>Runs</dt><dd>" + t.runs.length + "</dd></div>" +
+        "<div><dt>Done</dt><dd>" + done + "</dd></div>" +
+        "<div><dt>Success</dt><dd>" + pct(done, req) + "%</dd></div>" +
+        "<div><dt>Fuel</dt><dd>" + fuel + "</dd></div>" +
+      "</dl>" +
+      '<details class="intel" data-key="' + esc(key) + '"' + (open ? " open" : "") + ">" +
+        "<summary>" + CHEV + "Intel</summary>" +
+        '<div class="intel-body">' +
+          "<div><div class=\"mini-h\">By setting</div><table class=\"mini-table\"><tbody>" +
+            Object.keys(bySet).map(function (k) {
+              var b = bySet[k];
+              return "<tr><td>" + esc(k) + "</td><td>" + b.runs + " runs</td><td>" + b.done + "/" + b.req + "</td></tr>";
+            }).join("") +
+          "</tbody></table></div>" +
+          "<div><div class=\"mini-h\">Averages</div><table class=\"mini-table\"><tbody>" +
+            "<tr><td>Per run</td><td>" + (t.runs.length ? (done / t.runs.length).toFixed(1) : 0) + " done</td><td>" + (avgMin != null ? avgMin + " min" : "—") + "</td></tr>" +
+            "<tr><td>Fuel per unit</td><td></td><td>" + (done && fuel ? (fuel / done).toFixed(1) : "—") + "</td></tr>" +
+          "</tbody></table></div>" +
+          "<div><div class=\"mini-h\">Common issues</div>" +
+            (issueKeys.length
+              ? '<ul class="issues">' + issueKeys.map(function (s) { return "<li>" + esc(s) + (issues[s] > 1 ? " ×" + issues[s] : "") + "</li>"; }).join("") + "</ul>"
+              : '<div class="none">None logged</div>') +
+          "</div>" +
+        "</div>" +
+      "</details>" +
+    "</article>";
+  }
+
+  function renderFilters() {
+    var el = document.getElementById("filters");
+    function group(name, field, opts) {
+      return '<div class="fgroup" role="group" aria-label="' + name + '"><span>' + name + "</span>" +
+        opts.map(function (o) {
+          return '<button class="chip" data-field="' + field + '" data-value="' + esc(o[0]) + '" aria-pressed="' + (state[field] === o[0]) + '">' + esc(o[1]) + "</button>";
+        }).join("") + "</div>";
+    }
+    el.innerHTML =
+      group("Range", "range", [["7", "7D"], ["14", "14D"], ["30", "30D"], ["all", "All"]]) +
+      (taskOrder.length > 1 ? group("Task", "task", [["all", "All"]].concat(taskOrder.map(function (k) { return [k, tasks[k].label]; }))) : "") +
+      group("Status", "status", [["all", "All"], ["complete", "Complete"], ["partial", "Partial"], ["failed", "Failed"]]);
+    el.onclick = function (e) {
+      var b = e.target.closest("button.chip"); if (!b) return;
+      state[b.getAttribute("data-field")] = b.getAttribute("data-value");
+      save(); renderFilters(); renderFiltered();
+    };
+  }
+
+  function filtered() {
+    var start = null;
+    if (state.range !== "all") start = ymd(addDays(new Date(), -(+state.range - 1)));
+    return runs.filter(function (r) {
+      return (state.task === "all" || r.task === state.task) &&
+        (state.status === "all" || statusOf(r) === state.status) &&
+        (!start || r.date >= start);
+    });
+  }
+
+  function renderFiltered() {
+    var list = filtered();
+    renderChart(list);
+    renderDays(list);
+  }
+
+  function renderChart(list) {
+    var card = document.getElementById("chart-card");
+    var end = new Date();
+    var nDays = state.range === "all"
+      ? Math.min(90, Math.max(7, Math.round((end - parseYmd(runs[runs.length - 1].date)) / 86400000) + 1))
+      : +state.range;
+    var days = [];
+    for (var i = nDays - 1; i >= 0; i--) {
+      var d = ymd(addDays(end, -i));
+      var dr = list.filter(function (r) { return r.date === d; });
+      days.push({ date: d, runs: dr.length, done: sum(dr, function (r) { return r.completed; }), fuel: sum(dr, fuelSpent) });
+    }
+    var total = sum(days, function (d) { return d.done; });
+    var max = Math.max(1, Math.max.apply(null, days.map(function (d) { return d.done; })));
+    var nice = max <= 5 ? 5 : max <= 10 ? 10 : Math.ceil(max / 10) * 10;
+
+    var W = 1000, H = 170, padL = 34, padB = 22, padT = 8;
+    var plotW = W - padL, plotH = H - padB - padT;
+    var colW = plotW / nDays, barW = Math.max(3, Math.min(28, colW * 0.56));
+    var svg = '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="Completed units per day, last ' + nDays + ' days">';
+    [0, 0.5, 1].forEach(function (f) {
+      var y = padT + plotH - plotH * f;
+      svg += '<line class="' + (f === 0 ? "base" : "grid") + '" x1="' + padL + '" x2="' + W + '" y1="' + y + '" y2="' + y + '"/>';
+    });
+    svg += "</svg>";
+
+    // Bars and labels are positioned in HTML percentages so text never stretches.
+    var labels = "", bars = "", step = nDays <= 14 ? 1 : nDays <= 30 ? 3 : 7;
+    days.forEach(function (d, i) {
+      var cx = padL + colW * i + colW / 2;
+      var h = d.done ? Math.max(3, (d.done / nice) * plotH) : 0;
+      var left = (cx / W) * 100;
+      if (h) bars += '<div class="bm" style="left:' + left + "%;width:" + (barW / W) * 100 + "%;height:" + h + 'px"></div>';
+      bars += '<div class="hit" data-i="' + i + '" style="left:' + ((padL + colW * i) / W) * 100 + "%;width:" + (colW / W) * 100 + '%"></div>';
+      if ((nDays - 1 - i) % step === 0) {
+        var dt = parseYmd(d.date);
+        labels += '<span style="left:' + left + '%">' + (d.date === TODAY ? "Today" : dt.toLocaleDateString(undefined, { month: "numeric", day: "numeric" })) + "</span>";
+      }
+    });
+    var yl = [0, nice / 2, nice].map(function (v, i) {
+      return '<span style="bottom:' + (padB + plotH * (i / 2) - 6) + 'px">' + v + "</span>";
+    }).join("");
+
+    card.innerHTML =
+      '<div class="chart-title"><span>Completed per day · ' + (state.task === "all" ? "all tasks" : esc(tasks[state.task].label)) + "</span><span><b>" + total + "</b> in " + nDays + " days</span></div>" +
+      '<div class="plot">' + svg + '<div class="bars">' + bars + "</div>" + '<div class="ylab">' + yl + "</div>" + '<div class="xlab">' + labels + "</div></div>" +
+      '<div class="tip" id="tip"></div>';
+
+    var tip = document.getElementById("tip");
+    var plot = card.querySelector(".plot");
+    plot.onmousemove = function (e) {
+      var hit = e.target.closest(".hit");
+      if (!hit) { tip.classList.remove("on"); return; }
+      var d = days[+hit.getAttribute("data-i")];
+      var pr = plot.getBoundingClientRect(), cr = card.getBoundingClientRect(), hr = hit.getBoundingClientRect();
+      tip.innerHTML = '<div class="t-date">' + esc(dayName(d.date)) + "</div>" +
+        '<div class="t-row">Completed <b>' + d.done + "</b></div>" +
+        '<div class="t-row">Runs <b>' + d.runs + "</b></div>" +
+        '<div class="t-row">Fuel <b>' + d.fuel + "</b></div>";
+      var x = hr.left - cr.left + hr.width / 2;
+      x = Math.max(85, Math.min(cr.width - 85, x));
+      tip.style.left = x + "px";
+      tip.style.top = Math.max(pr.top - cr.top + 70, e.clientY - cr.top - 12) + "px";
+      tip.classList.add("on");
+    };
+    plot.onmouseleave = function () { tip.classList.remove("on"); };
+  }
+
+  function renderDays(list) {
+    var el = document.getElementById("days");
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-filter">No runs match these filters.</div>';
+      return;
+    }
+    var groups = [], cur = null;
+    list.forEach(function (r) {
+      if (!cur || cur.date !== r.date) { cur = { date: r.date, runs: [] }; groups.push(cur); }
+      cur.runs.push(r);
+    });
+    el.innerHTML = groups.map(function (g, gi) {
+      var key = "day:" + g.date;
+      var open = state.open[key] != null ? state.open[key] : gi === 0;
+      var done = sum(g.runs, function (r) { return r.completed; });
+      var req = sum(g.runs, function (r) { return r.requested; });
+      var fuel = sum(g.runs, fuelSpent);
+      var flags = g.runs.filter(function (r) { return statusOf(r) !== "complete"; }).length;
+      return '<details class="day" data-key="' + key + '"' + (open ? " open" : "") + ">" +
+        "<summary>" + CHEV + '<span class="day-name">' + esc(dayName(g.date)) + "</span>" +
+        '<span class="day-meta"><span><b>' + g.runs.length + "</b> " + (g.runs.length === 1 ? "run" : "runs") + "</span>" +
+        "<span><b>" + done + "/" + req + "</b> done</span>" +
+        (fuel ? "<span><b>" + fuel + "</b> fuel</span>" : "") +
+        (flags ? '<span style="color:var(--warn)"><b style="color:var(--warn)">' + flags + "</b> flagged</span>" : "") +
+        "</span></summary>" +
+        '<div class="day-body">' + g.runs.map(runRow).join("") + "</div></details>";
+    }).join("");
+  }
+
+  function runRow(r) {
+    var st = statusOf(r);
+    var key = "run:" + (r.id || r.date + r.time + r.task);
+    var open = state.open[key] === true;
+    var fuel = r.resources && r.resources.fuel;
+    var res = r.resources ? Object.keys(r.resources).map(function (k) {
+      var x = r.resources[k];
+      if (!x || x.before == null || x.after == null) return "";
+      return '<div class="field"><div class="k">' + esc(k) + '</div><div class="v mono">' + x.before + " → " + x.after +
+        ' <span style="color:var(--muted)">(−' + Math.max(0, x.before - x.after) + ")</span></div></div>";
+    }).join("") : "";
+    return '<details class="run" data-key="' + esc(key) + '"' + (open ? " open" : "") + ">" +
+      "<summary>" + CHEV +
+        '<span class="r-time">' + esc(clock(r.time)) + "</span>" +
+        '<span class="r-task">' + esc(r.label || r.task) + (settingsText(r.settings) ? "<small>" + esc(settingsText(r.settings)) + "</small>" : "") + "</span>" +
+        '<span class="r-count">' + (r.completed || 0) + "<small>/" + (r.requested || 0) + "</small></span>" +
+        '<span class="r-barwrap"><span class="r-bar" role="img" aria-label="' + pct(r.completed, r.requested) + ' percent"><i style="width:' + Math.min(100, pct(r.completed, r.requested)) + '%"></i></span></span>' +
+        pill(st) +
+      "</summary>" +
+      '<div class="run-body">' +
+        '<div class="field"><div class="k">Started</div><div class="v">' + esc(dayName(r.date)) + ", " + esc(clock(r.time)) + "</div></div>" +
+        '<div class="field"><div class="k">Duration</div><div class="v">' + (r.minutes != null ? r.minutes + " min" : "—") + "</div></div>" +
+        '<div class="field"><div class="k">Settings</div><div class="v">' + (esc(settingsText(r.settings)) || "—") + "</div></div>" +
+        res +
+        '<div class="field wide"><div class="k">Issues</div>' +
+          ((r.issues && r.issues.length) ? '<ul class="issues">' + r.issues.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul>" : '<div class="none">None</div>') +
+        "</div>" +
+        (r.notes ? '<div class="field wide"><div class="k">Notes</div><div class="v">' + esc(r.notes) + "</div></div>" : "") +
+        '<div class="field wide"><div class="k">Run ID</div><div class="v mono" style="color:var(--muted)">' + esc(r.id || "—") + "</div></div>" +
+      "</div></details>";
   }
 })();
-
-// Pick up new runs: reload every minute while the tab is visible.
-setInterval(function () { if (!document.hidden) location.reload(); }, 60000);
 </script>
+<style>
+  /* Chart overlay layout (bars/labels in HTML so text doesn't stretch with the SVG) */
+  .plot { position: relative; height: 170px; }
+  .plot svg { position: absolute; inset: 0; }
+  .bars { position: absolute; inset: 0; }
+  .bm { position: absolute; bottom: 22px; transform: translateX(-50%); background: var(--accent); border-radius: 4px 4px 0 0; pointer-events: none; }
+  .hit { position: absolute; top: 0; bottom: 22px; cursor: default; }
+  .hit:hover { background: rgba(255, 255, 255, 0.04); }
+  .ylab span { position: absolute; left: 0; font: 10.5px/1 var(--mono); color: var(--muted); }
+  .xlab span { position: absolute; bottom: 2px; transform: translateX(-50%); font: 10.5px/1 var(--mono); color: var(--muted); white-space: nowrap; }
+</style>
 </body>
 </html>
