@@ -11,6 +11,7 @@ This folder automates tasks in **Last Z: Survival Shooter**. The game runs in Bl
 | `.claude/skills/last-z-setup/` | First-time setup and health check |
 | `data/runs.js` | The user's run log. One `LZ_RUNS.push({...});` line per run. Git-ignored. |
 | `data/config.json` | The user's settings, including `dashboard_url` (their claude.ai dashboard). Git-ignored. |
+| `alliance/index.html` | The alliance stats page. It reads `alliance/data/alliance.js`, which `last-z-alliance-stats` exports from `data/Last Z Alliance Stats.xlsx`. Both data files are git-ignored. |
 | `dashboard/index.html` | The dashboard template. Opened from the folder it reads `data/runs.js`; published to claude.ai (by `last-z-setup`) it reads the page's own database, which `last-z-log-run` keeps in sync. |
 
 If these skills don't load automatically (for example in a Claude Desktop chat), read the matching `SKILL.md` from this folder directly.
@@ -20,6 +21,7 @@ If these skills don't load automatically (for example in a Claude Desktop chat),
 | Ask | Skill |
 |---|---|
 | "run 10 boomers", "rally Stegosauruses" | `last-z-running-boomers` |
+| "log alliance stats", "capture member stats" | `last-z-alliance-stats` |
 
 ## Rules
 
