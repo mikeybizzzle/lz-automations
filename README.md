@@ -1,10 +1,10 @@
 # Last Z Tasks
 
-Claude runs repeatable tasks in **Last Z: Survival Shooter** for you, logs each run, and shows your history on a dashboard you can open on your computer, your phone or in the Claude app.
+Claude runs repeatable tasks in **Last Z: Survival Shooter** for you, logs each run, and shows your history on a private dashboard in the Claude app, on your computer or your phone.
 
 - The game runs in BlueStacks Air on a Mac, and Claude plays it with computer use.
 - You answer a few questions at the start of a task, then you can walk away.
-- When the task finishes, it's added to both dashboards and Claude can send a one-line summary to your phone.
+- When the task finishes, Claude logs it, opens your dashboard in the chat and can send a one-line summary to your phone.
 
 ## What you need
 
@@ -30,21 +30,19 @@ cd ~/Last-Z-Tasks && claude
 
 Then send: `set up Last Z`
 
-Either way, Claude copies the task files, creates your run log, checks that it can see BlueStacks, and sets up your two dashboards. The claude.ai dashboard needs Claude Desktop (or claude.ai), so if you set up from Claude Code, run `set up Last Z` once from a Claude Desktop chat with the folder added to get it.
+Either way, Claude copies the task files, creates your run log, checks that it can see BlueStacks, and creates your dashboard. The dashboard lives on claude.ai, so if you set up from Claude Code, run `set up Last Z` once from a Claude Desktop chat with the folder added to create it.
 
 ## Using it
 
 | Say | What happens |
 |---|---|
 | `run 10 boomers` | Runs 10 Stegosaurus rallies, logs the run, and notifies you |
-| `update Last Z Tasks` | Pulls the latest task files and refreshes your claude.ai dashboard's design. Your run history is never touched. |
-| `sync the Last Z dashboard` | Copies any runs the claude.ai dashboard is missing from your log |
+| `open my Last Z dashboard` | Opens your dashboard in the chat |
+| `update Last Z Tasks` | Pulls the latest task files and refreshes your dashboard's design. Your run history is never touched. |
+| `sync my Last Z dashboard` | Makes your dashboard match your log exactly |
 | `check the Last Z run log` | Finds and fixes broken log entries |
 
-**Your dashboards**
-
-- **On your computer:** open `Last-Z-Tasks/dashboard/index.html` in your web browser (from Finder: right-click → Open With → Chrome or Safari). It reloads every minute, so you can leave it open. It won't load inside another app's file preview, because it reads your log from the folder next to it.
-- **On your phone or in the Claude app:** your private **Last Z Tasks** page on claude.ai. It updates live after every run. Pin it for quick access.
+**Your dashboard** is a private page on claude.ai. It opens in the chat after every run, and it's in your artifacts in the Claude app on your phone. Pin it for quick access.
 
 **Before you step away:** keep the Mac awake and unlocked, and leave the Claude app and BlueStacks open. Computer use stops when the screen locks or the Mac sleeps.
 
@@ -63,14 +61,14 @@ Last-Z-Tasks/
     last-z-setup/             ← setup and health check
     last-z-log-run/           ← shared last step: log the run, notify
     last-z-running-boomers/   ← one folder per task
-  dashboard/index.html        ← the dashboard (local, and the template for claude.ai)
-  data/runs.js                ← your run log (stays on your computer)
-  data/config.json            ← your settings, like your claude.ai dashboard link
+  dashboard/index.html        ← the dashboard template, published to claude.ai
+  data/runs.json              ← your run log (stays on your computer)
+  data/config.json            ← your settings, like your dashboard link
 ```
 
 - Skills live in `.claude/skills/`, so Claude Code loads them automatically. In Claude Desktop, `CLAUDE.md` points Claude to them.
-- The run log is a JavaScript file with one `LZ_RUNS.push({...});` line per run. The dashboard loads it directly, so it works by double-click with no server.
-- The same `dashboard/index.html` is published to claude.ai as each user's private dashboard. There it reads runs from the page's own database, and the log step copies each new run into it, filling in any it missed.
+- The run log is `data/runs.json`, one run per line. It's the source of truth.
+- `dashboard/index.html` is published to claude.ai as each user's private dashboard. It reads runs from the page's own database, and after every run Claude makes that database match `data/runs.json` exactly, then opens the dashboard in the chat.
 - `data/` is git-ignored, so each person's history stays private and updates never overwrite it.
 
 ## Adding a task

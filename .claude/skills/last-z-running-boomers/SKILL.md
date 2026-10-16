@@ -75,6 +75,7 @@ Then follow the **last-z-log-run** skill with:
 
 - `task`: `running-boomers`
 - `label`: `Running Boomers`
+- `short`: `Boomers`
 - `settings`: `{"level": <level>}`
 - `requested` / `completed`: rallies asked for / verified
 - `resources`: `{"fuel": {"before": <n>, "after": <n>}}`

@@ -5,9 +5,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* One file, two homes:
-     - opened from the Last-Z-Tasks folder, it reads ../data/runs.js
-     - published to claude.ai, it reads the page's own database (collection "runs")
+  /* The Last Z Tasks dashboard. It runs on claude.ai only: each user publishes their own private copy,
+     and it reads runs from the page's own database (collection "runs"), which the last-z-log-run
+     skill keeps identical to data/runs.json in the user's Last-Z-Tasks folder.
      Visual style inspired by lastz.gg. Dark only, by design. */
   :root {
     /* High-contrast pass: no greys. Secondary text is warm off-white, small labels are soft orange. */
@@ -221,22 +221,7 @@
 </main>
 
 <script>
-  // Local mode loads ../data/runs.js next. Only that file runs between this script and the
-  // main one, so any error here came from the log. (On file:// pages Chrome hides the line.)
-  window.LZ_RUNS = window.LZ_RUNS || [];
-  window.LZ_LOAD_ERROR = null;
-  window.LZ_ON_ERROR = function (e) { window.LZ_LOAD_ERROR = e.lineno ? " (line " + e.lineno + ")" : " "; };
-  if (!window.claude) window.addEventListener("error", window.LZ_ON_ERROR);
-</script>
-<script>
-  // In claude.ai the page reads its database instead, so only load the local log file here.
-  if (!window.claude) document.write('<script src="../data/runs.js" onerror="window.LZ_MISSING = true"><\/script>');
-</script>
-<script>
 (function () {
-  window.removeEventListener("error", window.LZ_ON_ERROR);
-
-  var CLOUD = !!window.claude;
   var app = document.getElementById("app");
   var STORE = "lz-dashboard-v2";
   var CHEV = '<svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -336,7 +321,11 @@
   var data = { runs: [], tasks: {}, taskOrder: [], skipped: 0 };
   var firstPaint = true;
 
-  if (CLOUD) {
+  if (!window.claude) {
+    // Opened outside Claude (for example as a file): there's no database to read here.
+    notice('This dashboard runs in Claude. Ask Claude to <code>open my Last Z dashboard</code>.');
+    setSync("Open in Claude", false);
+  } else {
     setSync('<span class="long">Connecting · </span>' + nowClock(), false);
     window.claude.use("db").then(function (db) {
       if (!db) {
@@ -353,19 +342,6 @@
     }, function () {
       notice("Your runs couldn't load here. Open this dashboard in Claude while signed in.");
     });
-  } else {
-    if (window.LZ_LOAD_ERROR) {
-      notice('The run log (data/runs.js) has a broken line' + esc(window.LZ_LOAD_ERROR.trim() ? window.LZ_LOAD_ERROR : "") +
-        '.<br>Ask Claude to <code>check the Last Z run log</code> to fix it.', true);
-    } else if (window.LZ_MISSING) {
-      notice('No run log found next to this page. Open <code>dashboard/index.html</code> from your Last-Z-Tasks folder, or ask Claude to <code>set up Last Z</code>.');
-    } else {
-      render(window.LZ_RUNS || []);
-      if (state.scroll) window.scrollTo(0, state.scroll);
-    }
-    setSync('<span class="long">Auto-sync 60s · </span>' + nowClock(), !window.LZ_LOAD_ERROR && !window.LZ_MISSING);
-    // Pick up new runs: reload every minute while the tab is visible.
-    setInterval(function () { if (document.hidden) return; save(); location.reload(); }, 60000);
   }
 
   function notice(html, isError) {
@@ -408,7 +384,7 @@
       '<section id="sec-log"><div class="sec-head"><h2><span class="ico">◆</span>Run log</h2><span class="hint">Tap a day or run for details</span></div>' +
       '<div class="days" id="days"></div></section>';
 
-    html += "<footer><span>" + (CLOUD ? "Synced from your Last-Z-Tasks folder" : "Source · data/runs.js · append-only") +
+    html += "<footer><span>Synced from data/runs.json in your Last-Z-Tasks folder" +
       "</span><span>Style inspired by lastz.gg · fan-made, unofficial</span></footer>";
 
     var y = window.scrollY;

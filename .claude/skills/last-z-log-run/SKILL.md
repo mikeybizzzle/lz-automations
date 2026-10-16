@@ -1,32 +1,38 @@
 ---
 name: last-z-log-run
-description: Log a finished Last Z task run to the local and claude.ai dashboards and notify the user. Every Last Z task skill ends by following this skill, including runs that stopped early. Also use when asked to check, fix or sync the Last Z run log or dashboard.
+description: Log a finished Last Z task run to data/runs.json, sync it to the user's claude.ai dashboard, open the dashboard in the chat and notify the user. Every Last Z task skill ends with this, including runs that stopped early. Also use when asked to open, sync, check or fix the Last Z dashboard or run log.
 ---
 
 # Log a Last Z run
 
 Run this at the end of every Last Z task, even when the task stopped early or failed. A partial run still gets logged.
 
-Every run goes to two places:
+Runs live in two places:
 
-- **`data/runs.js`** in the workspace: the source of truth. `dashboard/index.html` reads it when opened from the folder.
-- **The claude.ai dashboard:** the same page published to claude.ai, so it opens on the phone and in the Claude app. It keeps a copy of each run in its own database. Its link is in `data/config.json` as `dashboard_url`.
+- **`data/runs.json`** in the workspace: the log, and the source of truth.
+- **The claude.ai dashboard** ("Last Z Tasks"): what the user looks at, in the Claude app on their computer or phone. Its link is `dashboard_url` in `data/config.json`. It reads runs from its own database, which this skill keeps identical to `data/runs.json`.
+
+Never try to open `dashboard/index.html` or any `file://` path in a browser. The browsers Claude can drive can't open files from the user's computer. The dashboard is opened only with the Artifact tool (step 4).
 
 ## 1. Find the workspace
 
-The workspace is the folder that holds `CLAUDE.md`, `dashboard/` and `data/`. It is usually `~/Last-Z-Tasks`.
+The workspace is the folder that holds `CLAUDE.md` and `data/`. It is usually `~/Last-Z-Tasks`.
 
 - In Claude Code it's the current folder.
 - In a Claude Desktop or cloud session linked to the Mac, it's the connected folder, reached with the device tools (`device_bash` at `$HOME/mnt/<folder-name>`).
 
-If you can't reach the workspace, give the run summary in chat, say it wasn't logged, and skip to step 5.
+If you can't reach the workspace, give the run report in chat, say it wasn't logged, and skip to step 5.
 
-## 2. Append one line to `data/runs.js`
+## 2. Add the run to `data/runs.json`
 
-`data/runs.js` is the log. Its first line is `window.LZ_RUNS = window.LZ_RUNS || [];` and each run after that is one line:
+The file holds one object with a `runs` array, oldest first, one run per line:
 
-```js
-LZ_RUNS.push({"id":"2026-10-16T11:17-running-boomers","date":"2026-10-16","time":"11:17","task":"running-boomers","label":"Running Boomers","short":"Boomers","settings":{"level":49},"requested":10,"completed":10,"status":"complete","minutes":5,"resources":{"fuel":{"before":256,"after":96}},"issues":["1 formations-busy wait","1 misclick opened Chat"],"notes":""});
+```json
+{
+  "runs": [
+    {"id":"2026-10-16T11:13-running-boomers","date":"2026-10-16","time":"11:13","task":"running-boomers","label":"Running Boomers","short":"Boomers","settings":{"level":49},"requested":10,"completed":10,"status":"complete","minutes":5,"resources":{"fuel":{"before":256,"after":96}},"issues":["1 formations-busy wait"],"notes":""}
+  ]
+}
 ```
 
 Field rules:
@@ -37,7 +43,7 @@ Field rules:
 | `date`, `time` | When the run **started**, in the user's local time. `YYYY-MM-DD` and 24h `HH:MM`. |
 | `task` | The task skill's slug, without the `last-z-` prefix |
 | `label` | Human name of the task |
-| `short` | One-word name for the run log rows, e.g. `Boomers` |
+| `short` | One-word name for the dashboard's run rows, e.g. `Boomers` |
 | `settings` | What the user chose, e.g. `{"level":49}` |
 | `requested` | How many units the user asked for (rallies, gathers, etc.) |
 | `completed` | How many you **verified**. Never count a click as a completion. |
@@ -47,44 +53,46 @@ Field rules:
 | `issues` | Short phrases for errors, waits, misclicks, warnings. `[]` if none. |
 | `notes` | Anything else worth keeping, or `""` |
 
-How to write it:
+Write it with this script from the workspace folder, pasting the run object in place of `RUN_JSON`. It creates the file if it's missing, refuses a duplicate id, keeps one run per line, and never touches earlier runs:
 
-- Append only. Never rewrite or reorder existing lines.
-- Keep it one line of valid JSON inside `LZ_RUNS.push(...);`: double quotes, no trailing commas, no comments.
-- If `data/runs.js` is missing, create it with the header line first.
-- Check that the file still parses after writing. If `python3` is available:
+```bash
+python3 - <<'EOF'
+import json, os
+path = "data/runs.json"
+run = json.loads(r'''RUN_JSON''')
+log = json.load(open(path)) if os.path.exists(path) else {"runs": []}
+if any(r.get("id") == run["id"] for r in log["runs"]):
+    raise SystemExit("already logged: " + run["id"])
+log["runs"].append(run)
+text = '{\n  "runs": [\n' + ",\n".join("    " + json.dumps(r, ensure_ascii=False) for r in log["runs"]) + "\n  ]\n}\n"
+json.loads(text)  # sanity check before writing
+open(path, "w").write(text)
+print("logged", run["id"], "-", len(log["runs"]), "runs in the log")
+EOF
+```
 
-  ```bash
-  python3 - <<'EOF'
-  import json
-  for i, line in enumerate(open("data/runs.js"), 1):
-      line = line.strip()
-      if line.startswith("LZ_RUNS.push(") and line.endswith(");"):
-          json.loads(line[len("LZ_RUNS.push("):-2])
-      elif line and not line.startswith("window.LZ_RUNS"):
-          raise SystemExit(f"bad line {i}")
-  print("ok")
-  EOF
-  ```
+## 3. Sync the claude.ai dashboard
 
-  If the check fails on the line you just wrote, fix that line. Don't touch other lines without asking.
+Make the dashboard's database match `data/runs.json` exactly.
 
-## 3. Update the claude.ai dashboard
+1. Read `dashboard_url` from `data/config.json`. If there isn't one, skip this step and mention that "set up Last Z" creates the dashboard.
+2. Load the `ArtifactData` tool (ToolSearch `select:ArtifactData`). If this session doesn't have it (for example Claude Code in a terminal), skip this step and say the dashboard will catch up the next time a run is logged from a Claude Desktop chat, or when the user says "sync my Last Z dashboard".
+3. `list` the collection `runs` at `dashboard_url`, paging with `query.cursor` until there's no `next_cursor`. Note each document's `id`, data and `version`.
+4. For every run in `data/runs.json`:
+   - **Not on the dashboard:** write it with `set`, `doc_id` = the run's `id`, `data` = the run object exactly as logged, no `if_version`.
+   - **On the dashboard but different:** write it with `set` and that document's `version` as `if_version`.
+   - **Identical:** leave it.
 
-1. Read `data/config.json`. If there's no `dashboard_url`, skip this step and mention that "set up Last Z" adds the phone dashboard.
-2. Load the `ArtifactData` tool (ToolSearch `select:ArtifactData`). If this session doesn't have it (for example Claude Code in a terminal), skip this step and say the claude.ai dashboard will catch up the next time a run is logged from a session that can reach claude.ai, or when the user says "sync the Last Z dashboard".
-3. `list` the collection `runs` at `dashboard_url` (page with `query.cursor` until there's no `next_cursor`) and collect the document ids.
-4. For every run in `data/runs.js` whose `id` isn't there yet, the new run included, write it to collection `runs` with `doc_id` = the run's `id` and `data` = the run object exactly as logged. Use one `batch` of `set` writes (up to 50 per batch). These are new documents, so they need no `if_version`. This also backfills runs logged from sessions that couldn't reach claude.ai.
-5. Don't delete or change documents that are already there unless you are fixing the log (see below).
+   Send the writes as one `batch` (up to 50 per batch).
+5. **On the dashboard but not in the log:** don't delete anything on your own. List those runs for the user and delete them (with `if_version`) only if they say so.
 
 The page updates live, so there's nothing to republish.
 
-## 4. Point to the dashboards
+## 4. Open the dashboard
 
-Tell the user the run was logged, and where to see it:
+Open it in the chat with the Artifact tool: `action: "open"`, `url` = `dashboard_url`. It's also in the user's artifacts on claude.ai and in the Claude phone app.
 
-- On the computer: `dashboard/index.html` in the workspace. It reloads itself every minute while open.
-- On the phone or in the Claude app: the claude.ai dashboard, if step 3 updated it.
+If the Artifact tool isn't available, give the dashboard link as plain text instead. Never open the local file or a `file://` path.
 
 ## 5. Notify
 
@@ -98,13 +106,11 @@ For a partial or failed run, lead with what went wrong and how many got done:
 
 The tool decides whether to send. If it says it wasn't sent, that's fine. Don't retry.
 
-## Checking or fixing the log
+## Other requests
 
-When the user asks to check the run log, or the dashboard says the log is broken or skipped entries:
-
-1. Run the check from step 2. Also flag any `push` line whose object has no `task` or no `date` in `YYYY-MM-DD` form, since the dashboard skips those.
-2. Show the user each bad line and the fix you'd make.
-3. Change only those lines, and only after the user says yes. Then run the check again.
-4. If a fixed run is also on the claude.ai dashboard, `get` its document, then `set` the corrected run with that document's `version` as `if_version`.
-
-When the user asks to sync the dashboard, do step 3 on its own.
+- **"Open my Last Z dashboard":** step 4 on its own.
+- **"Sync my Last Z dashboard":** step 3, then step 4.
+- **"Check the Last Z run log":**
+  1. Load `data/runs.json` with `json.load`. Flag a file that doesn't parse, any run without a `task`, any run without a `date` in `YYYY-MM-DD` form (the dashboard skips those), and any repeated `id`.
+  2. Show the user each problem and the fix you'd make.
+  3. Change only those runs, and only after the user says yes. Then run step 3 so the dashboard matches.
