@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RfC Member Intel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&family=Mulish:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Same visual system as the Last Z Tasks dashboard (inspired by lastz.gg), high-contrast. Dark only, by design. */
+  :root {
+    --bg: #0a0f17;
+    --panel: #121a26;
+    --panel-2: #1a2535;
+    --band: #1f2b3d;
+    --line: #3a4a63;
+    --line-soft: #2a3649;
+    --ink: #f8f5ef;        /* all text */
+    --accent: #ff6b1a;
+    --accent-ink: #ff8a45; /* accent used as text on dark */
+    --accent-soft: rgba(255, 107, 26, 0.16);
+    --up: #5ee0a0;
+    --down: #ff6b70;
+    --est: #ffc857;
+    --display: "Rajdhani", "Barlow Condensed", "Arial Narrow", sans-serif;
+    --mono: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --body: "Mulish", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 15px/1.5 var(--body);
+    background:
+      radial-gradient(900px 420px at 85% -120px, rgba(255, 107, 26, 0.16), transparent 70%),
+      var(--bg);
+    min-height: 100vh;
+  }
+  button, input { font: inherit; color: inherit; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+  /* Top bar */
+  .topbar { border-bottom: 1px solid var(--line); background: rgba(10, 15, 23, 0.92); backdrop-filter: blur(6px); position: sticky; top: 0; z-index: 20; }
+  .topbar .wrap { display: flex; align-items: center; height: 58px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 22px/1 var(--display); letter-spacing: 0.04em; white-space: nowrap; }
+  .brand b { color: var(--accent-ink); font-weight: 700; }
+
+  /* Hero */
+  .hero { padding: 40px 0 8px; }
+  .kicker { font: 13px/1 var(--mono); letter-spacing: 0.2em; color: var(--accent-ink); text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); }
+  h1 { font: 700 clamp(44px, 7vw, 72px)/0.95 var(--display); letter-spacing: 0.05em; text-transform: uppercase; margin: 14px 0 12px; }
+  h1 span { color: var(--accent); }
+  .lede { margin: 0; font: 700 17px/1.3 var(--body); }
+  .lede b { color: var(--accent-ink); }
+
+  /* Collapsible sections */
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  .chev { width: 22px; height: 22px; flex: none; color: var(--ink); transition: transform 0.15s; }
+  details[open] > summary .chev { transform: rotate(90deg); color: var(--accent-ink); }
+  .sec { margin-top: 24px; border: 1px solid var(--line); border-radius: 3px; background: rgba(18, 26, 38, 0.6); }
+  .sec > summary { display: flex; align-items: center; gap: 12px; padding: 18px 18px 16px; }
+  .sec > summary:hover { background: var(--panel-2); }
+  .sec[open] > summary { border-bottom: 1px solid var(--line); }
+  h2 { font: 700 26px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 10px; }
+  h2 .ico { color: var(--accent); font-size: 18px; }
+  .sec-count { margin-left: auto; font: 13px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); border: 1px solid var(--line); padding: 7px 10px; border-radius: 3px; white-space: nowrap; }
+  .sec-count.alert { color: var(--down); border-color: var(--down); }
+  .sec-body { padding: 16px 18px 20px; }
+
+  /* Controls */
+  .filters { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; margin-bottom: 14px; }
+  .fgroup { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .fgroup > span { font: 12px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; margin-right: 4px; }
+  .chip { font: 700 14px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 8px 12px; cursor: pointer; color: var(--ink); }
+  .chip:hover { border-color: var(--accent); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip:focus-visible, summary:focus-visible, .search:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .search { background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font: 14px/1 var(--mono); color: var(--ink); width: 200px; max-width: 100%; }
+  .search::placeholder { color: var(--ink); opacity: 0.75; }
+
+  /* Tables */
+  .tscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 3px; background: var(--panel); }
+  table { border-collapse: separate; border-spacing: 0; width: 100%; font-variant-numeric: tabular-nums; }
+  th { font: 12px/1.2 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--band); text-align: right; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; font-weight: 400; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line-soft); text-align: right; white-space: nowrap; font: 14px/1.2 var(--mono); }
+  th.l, td.l { text-align: left; }
+  td.name { font: 700 16px/1.2 var(--display); letter-spacing: 0.04em; }
+  td.statname { font: 600 14px/1.2 var(--body); }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .pos { color: var(--accent-ink); font-weight: 700; }
+  tr:hover td { background: var(--panel-2); }
+
+  /* Member Stats grid (mirrors the Member Stats tab) */
+  #grid { width: fit-content; max-width: 100%; }
+  table.grid { width: auto; }
+  .grid th.date { text-align: center; border-left: 2px solid var(--line); font-size: 13px; }
+  .grid th.sub { background: var(--panel-2); font-size: 11.5px; }
+  .grid td.num, .grid th.num { border-left: 2px solid var(--line); }
+  .grid td, .grid th { min-width: 78px; }
+  .grid .stick1 { position: sticky; left: 0; z-index: 2; background: var(--panel); min-width: 150px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; border-right: 1px solid var(--line); }
+  .grid .stick2 { position: sticky; left: 150px; z-index: 2; background: var(--panel); min-width: 128px; border-right: 2px solid var(--line); }
+  .grid thead .stick1, .grid thead .stick2 { background: var(--band); z-index: 3; }
+  .grid tr.blockend td { border-bottom: 2px solid var(--line); }
+  .grid .stat-h { color: var(--accent-ink); font-size: 13px; letter-spacing: 0.08em; }
+  .grid th.stick1 { border-right: 2px solid var(--line); white-space: normal; }
+  .grid td.name { vertical-align: top; padding-top: 10px; }
+  .grid tr:hover td.stick1, .grid tr:hover td.stick2 { background: var(--panel-2); }
+  .est { display: inline-block; font: 10.5px/1 var(--mono); letter-spacing: 0.1em; color: var(--est); border: 1px dashed var(--est); border-radius: 3px; padding: 2px 4px; margin-left: 6px; vertical-align: 1px; }
+
+  /* Summary bands (mirror the Summary tab) */
+  .band { border: 1px solid var(--line); border-radius: 3px; margin-top: 10px; }
+  .band:first-child { margin-top: 0; }
+  .band > summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--band); font: 700 19px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+  .band > summary:hover { background: var(--panel-2); }
+  .band-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 14px; }
+  .tbl-title { font: 700 15px/1.2 var(--display); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .tbl-title .d { color: var(--accent-ink); }
+  .mini td, .mini th { padding: 7px 8px; font-size: 13.5px; }
+  .mini th { font-size: 11px; }
+  .mini td.n { font: 600 14px/1.2 var(--body); text-align: left; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+  .mini td.rank { text-align: center; width: 30px; }
+  .mini tr:nth-child(-n+3) td.rank { color: var(--accent-ink); font-weight: 700; }
+  .mini td.pct { font-weight: 700; }
+  .band .c-start { display: none; }
+  .mini td.statcell { font: 600 14px/1.2 var(--body); }
+  .mini tr.grp td { border-top: 2px solid var(--line); }
+
+  .pill { display: inline-block; font: 700 12.5px/1 var(--mono); padding: 5px 7px; border-radius: 3px; border: 1px solid; }
+  .pill.up { color: var(--up); border-color: var(--up); background: rgba(94, 224, 160, 0.12); }
+  .pill.down { color: var(--down); border-color: var(--down); background: rgba(255, 107, 112, 0.12); }
+  .rk { font: 13px/1 var(--mono); padding: 4px 7px; border-radius: 3px; border: 1px solid var(--ink); }
+  .rk.R2, .rk.R3, .rk.R4 { border-color: var(--accent-ink); color: var(--accent-ink); }
+  .status-on { color: var(--up); font-weight: 700; }
+  .status-off { color: var(--down); font-weight: 700; }
+
+  .notice { border: 1px dashed var(--line); border-radius: 3px; padding: 20px; text-align: center; font-weight: 600; background: var(--panel); }
+  .notice.error { border-color: var(--down); margin-top: 26px; }
+  .notice code { font-family: var(--mono); color: var(--accent-ink); background: var(--accent-soft); padding: 2px 7px; border-radius: 3px; }
+  .spacer { height: 48px; }
+  .flags-title { display: flex; align-items: center; gap: 8px; position: relative; }
+  .band > summary { position: relative; }
+  .band .info { margin-left: 2px; }
+  .info { display: inline-flex; }
+  .info-btn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--accent-ink); background: transparent; color: var(--accent-ink);
+    font: 700 13px/1 var(--body); text-transform: none; letter-spacing: 0; cursor: help; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .info-btn:hover, .info.open .info-btn { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .info-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tip { display: none; position: absolute; top: calc(100% + 8px); left: 0; z-index: 10; width: max-content; max-width: min(340px, 100%);
+    background: #0a0f17; border: 1px solid var(--line); border-top: 2px solid var(--accent); border-radius: 3px; padding: 10px 12px;
+    font: 500 14px/1.45 var(--body); letter-spacing: 0; text-transform: none; color: var(--ink); box-shadow: 0 8px 24px rgba(0,0,0,0.5); white-space: normal; }
+  .tip b { color: var(--accent-ink); font-weight: 700; }
+  .info:hover .tip, .info:focus-within .tip, .info.open .tip { display: block; }
+  .nw { white-space: nowrap; }
+  .sm { display: none; }
+  .seg { display: none; }
+  .grid tr.phead td { background: var(--band); border-bottom: 1px solid var(--line); padding: 9px 10px; }
+  .grid tr.phead .pname, .watch-m .pname { position: sticky; left: 10px; font: 700 16px/1.2 var(--display); letter-spacing: 0.04em; }
+  .watch-m tr.phead td { background: var(--band); padding: 9px 8px; }
+  .watch-m .rk { margin-left: 6px; }
+
+  @media (max-width: 900px) {
+    .band-body { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 760px) {
+    /* phone layout */
+    .topbar .wrap { height: 50px; }
+    .brand { font-size: 19px; }
+    .hero { padding: 26px 0 4px; }
+    .kicker { font-size: 11.5px; letter-spacing: 0.12em; }
+    h1 { font-size: 46px; margin: 10px 0 8px; }
+    .sec { margin-top: 16px; }
+    .sec-count:not(.alert) { display: none; }
+    h2 { font-size: 21px; letter-spacing: 0.06em; }
+    h2 .ico { font-size: 14px; }
+    .filters { gap: 10px; margin-bottom: 12px; }
+    .fgroup { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .fgroup::-webkit-scrollbar { display: none; }
+    .fgroup > span { flex: none; width: 46px; font-size: 11px; letter-spacing: 0.1em; }
+    .chip { flex: none; font-size: 13px; padding: 9px 10px; }
+    .search { width: 100%; font-size: 16px; }
+    .grid.grouped .stick1 { min-width: 78px; max-width: 92px; border-right: 2px solid var(--line); }
+    .grid td, .grid th { min-width: 0; padding: 8px 8px; font-size: 13.5px; }
+    .grid td.num { min-width: 70px; }
+    .grid td.dl { min-width: 60px; }
+    .tbl-title { font-size: 14px; }
+    .band > summary { font-size: 17px; padding: 11px 12px; }
+    .band-body { padding: 10px; gap: 0; }
+    .band-body > div { display: none; }
+    .band-body[data-view="0"] > div:nth-child(1), .band-body[data-view="1"] > div:nth-child(2), .band-body[data-view="2"] > div:nth-child(3) { display: block; }
+    .seg { display: flex; gap: 6px; padding: 10px 10px 0; }
+    .seg .chip { flex: 1; text-align: center; padding: 9px 4px; }
+    .c-start, .c-gain { display: none; }
+    .mini td, .mini th { padding: 8px 7px; }
+    .mini td.n { max-width: 140px; }
+    .lg { display: none; } .sm { display: inline; }
+    #grid { width: 100%; }
+    table.grid { width: 100%; }
+    .grid .stick1 { min-width: 110px; max-width: 110px; }
+    .grid .stick2 { left: 110px; min-width: 104px; }
+    td.name { font-size: 14.5px; }
+    .sec > summary { padding: 14px 12px; gap: 10px; }
+    .sec-body { padding: 12px 10px 14px; }
+    .sec-count { font-size: 11px; padding: 5px 7px; letter-spacing: 0.06em; }
+  }
+  @media (prefers-reduced-motion: reduce) { .chev { transition: none; } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+        <rect x="3" y="3" width="20" height="20" rx="2" fill="none" stroke="#ff6b1a" stroke-width="2"/>
+        <path d="M8 9h10l-10 8h10" fill="none" stroke="#f8f5ef" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <span id="brand">LAST Z <b>INTEL</b></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<script>
+  window.LZ_ALLIANCE = null;
+  window.LZ_ON_ERROR = function () { window.LZ_LOAD_ERROR = true; };
+  window.addEventListener("error", window.LZ_ON_ERROR);
+</script>
+<script src="data/alliance.js" onerror="window.LZ_MISSING = true"></script>
+<script>
+(function () {
+  window.removeEventListener("error", window.LZ_ON_ERROR);
+  var app = document.getElementById("app");
+  var D = window.LZ_ALLIANCE;
+  var STORE = "lz-alliance-v4";
+  var CHEV = '<svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var WINDOW_DAYS = 30;
+  // Watchlist: flag a stat that grew 0.1% or less over 7 days, or 0.5% or less over 30 days. HQ and Troop Power are excluded.
+  var WATCH = { short: { days: 7, max: 0.001 }, long: { days: 30, max: 0.005 } };
+  var WATCH_STATS = [["total", "Total Power"], ["kills", "Kills"], ["structure", "Structure Power"], ["tech", "Tech Power"], ["hero", "Hero Power"], ["mod", "Mod Vehicle Power"]];
+  // Member Stats rows, in the same order as the spreadsheet (Troop last).
+  var STATS = [["hq", "HQ Level"], ["total", "Total Power"], ["kills", "Kills"], ["structure", "Structure Power"], ["tech", "Tech Power"],
+               ["hero", "Hero Power"], ["mod", "Mod Vehicle Power"], ["troop", "Troop Power"]];
+  // Summary bands. Troop Power is left out.
+  var SUMMARY = [["total", "Total Power"], ["hero", "Hero Power"], ["tech", "Tech Power"], ["structure", "Structure Power"], ["mod", "Mod Vehicle Power"], ["kills", "Kills"]];
+
+  var PHONE = window.matchMedia("(max-width: 760px)");
+  function phone() { return PHONE.matches; }
+  function shortStat(label) { return label.replace(" Power", "").replace("Mod Vehicle", "Mod Veh.").replace("HQ Level", "HQ"); }
+
+  // ---------- helpers ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function parseYmd(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function fmtDate(s, short) {
+    return s ? parseYmd(s).toLocaleDateString(undefined, short ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" }) : "—";
+  }
+  function big(n) {
+    if (n == null) return "—";
+    var a = Math.abs(n), s = n < 0 ? "-" : "";
+    if (a >= 999500000) return s + (a / 1e9).toFixed(2) + "B";
+    if (a >= 999500) return s + (a / 1e6).toFixed(1) + "M";
+    if (a >= 1000) return s + Math.round(a / 1000) + "k";
+    return s + Math.round(a);
+  }
+  function fmt(key, v) { return v == null ? "—" : key === "hq" ? "Lv." + v : big(v); }
+  function gain(n) { return n == null ? "—" : (n > 0 ? "+" : "") + big(n); }
+  function pctText(p, dp) { return p == null ? "—" : (p > 0 ? "+" : "") + (p * 100).toFixed(dp == null ? 1 : dp) + "%"; }
+  function pctCell(p) { return p == null ? "—" : '<span class="' + (p > 0.0005 ? "up" : p < -0.0005 ? "down" : "") + '">' + pctText(p) + "</span>"; }
+  function pill(p, flag) { return p == null ? "—" : '<span class="pill ' + (flag || p <= 0 ? "down" : "up") + '">' + pctText(p) + "</span>"; }
+  function rk(r) { return r ? '<span class="rk ' + esc(r) + '">' + esc(r) + "</span>" : "—"; }
+  function info(id, label, html) {
+    return '<span class="info" id="' + id + '"><button type="button" class="info-btn" aria-label="' + esc(label) + '" aria-describedby="' + id + '-tip">i</button>' +
+      '<span class="tip" role="tooltip" id="' + id + '-tip">' + html + "</span></span>";
+  }
+  function nwDate(d) { return '<span class="nw">' + fmtDate(d, true) + "</span>"; }
+  function est(d) { return D && D.notes && D.notes[d] ? '<span class="est" title="' + esc(D.notes[d]) + '">EST</span>' : ""; }
+
+  // ---------- load states ----------
+  if (window.LZ_LOAD_ERROR || window.LZ_MISSING || !D || !D.members) {
+    app.innerHTML = '<div class="notice error">No alliance data found next to this page (data/alliance.js).<br>Ask Claude to <code>log alliance stats</code> to create it.</div>';
+    return;
+  }
+
+  // ---------- data model ----------
+  var dates = (D.dates || []).slice().sort();
+  var latest = dates[dates.length - 1] || null;
+  var prev = dates.length > 1 ? dates[dates.length - 2] : null;
+  var base30 = null, full30 = false;
+  if (prev) {
+    var target = parseYmd(latest); target.setDate(target.getDate() - WINDOW_DAYS);
+    var older = dates.slice(0, -1).filter(function (d) { return parseYmd(d) <= target; });
+    base30 = older.length ? older[older.length - 1] : dates[0];
+    full30 = !!older.length;
+  }
+  var members = D.members.map(function (m) { m.tracked = !!(m.active && m.track); return m; });
+  var tracked = members.filter(function (m) { return m.tracked; });
+
+  function val(m, date, key) { var h = date && m.history && m.history[date]; return h && h[key] != null ? h[key] : null; }
+  function change(m, key, from) {
+    var a = val(m, from, key), b = val(m, latest, key);
+    if (a == null || b == null || !a) return null;
+    return { start: a, now: b, gain: b - a, pct: (b - a) / a };
+  }
+  function byPower(a, b) { return (val(b, latest, "total") || 0) - (val(a, latest, "total") || 0); }
+
+  // ---------- saved view state ----------
+  var state = { stats: ["total"], range: "latest", rank: "all", q: "", sumView: "1", open: { "sec:stats": true, "sec:watch": true, "sec:summary": true, "sec:ref": false, "band:total": true } };
+  try { var saved = JSON.parse(localStorage.getItem(STORE) || "null"); if (saved) for (var k in saved) state[k] = saved[k]; } catch (e) {}
+  if (!Array.isArray(state.stats) || !state.stats.length) state.stats = ["total"];
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+
+  // ---------- header + hero ----------
+  var A = D.alliance || {};
+  document.getElementById("brand").innerHTML = (A.tag ? "[" + esc(A.tag) + "] " : "") + "LAST Z <b>INTEL</b>";
+
+
+  var html = '<div class="hero"><div class="kicker">// ' + (A.tag ? "[" + esc(A.tag) + "] " : "") + esc(A.name || "Alliance") +
+    (A.state ? ' <span class="nw">· State #' + esc(A.state) + "</span>" : "") + '</div><h1>Member <span>Intel</span></h1>' +
+    '<p class="lede">Most Recent Update: <b>' + fmtDate(latest) + "</b></p></div>";
+
+
+  // ---------- watchlist data ----------
+  function baseFor(days) {  // latest capture on or before `days` ago; the first capture if history is shorter
+    if (!prev) return null;
+    var t = parseYmd(latest); t.setDate(t.getDate() - days);
+    var o = dates.slice(0, -1).filter(function (d) { return parseYmd(d) <= t; });
+    return o.length ? o[o.length - 1] : dates[0];
+  }
+  var base7 = baseFor(WATCH.short.days), baseL = baseFor(WATCH.long.days);
+  var watch = [], flaggedMembers = {};
+  if (prev) tracked.forEach(function (m) {
+    WATCH_STATS.forEach(function (s) {
+      var c7 = change(m, s[0], base7), cL = change(m, s[0], baseL);
+      var hit7 = !!(c7 && c7.pct <= WATCH.short.max), hitL = !!(cL && cL.pct <= WATCH.long.max);
+      if (hit7 || hitL) { watch.push({ m: m, s: s, c7: c7, cL: cL, hit7: hit7, hitL: hitL }); flaggedMembers[m.name] = 1; }
+    });
+  });
+  watch.sort(function (a, b) { return byPower(a.m, b.m) || WATCH_STATS.indexOf(a.s) - WATCH_STATS.indexOf(b.s); });
+  var flaggedCount = Object.keys(flaggedMembers).length;
+
+  html += section("stats", "Member Stats", tracked.length + " members", "", '<div class="filters" id="st-filters"></div><div class="tscroll" id="grid"></div>');
+  html += section("watch", "Watchlist", prev ? flaggedCount + (flaggedCount === 1 ? " member" : " members") + " flagged" : "", watch.length ? "alert" : "", '<div id="watch"></div>');
+  html += section("summary", "Summary", "", "", '<div id="summary"></div>');
+  html += section("ref", "Members Reference", members.length + " members", "", '<div id="ref"></div>');
+  html += '<div class="spacer"></div>';
+  app.innerHTML = html;
+
+  renderStatFilters(); renderGrid(); renderWatch(); renderSummary(); renderRef();
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".info-btn"), mine = btn && btn.parentNode;
+    if (btn) e.preventDefault();  // inside a <summary>, don't open/close the panel
+    document.querySelectorAll(".info.open").forEach(function (x) { if (x !== mine) x.classList.remove("open"); });
+    if (mine) mine.classList.toggle("open");
+  });
+  var onBreakpoint = function () { renderGrid(); renderWatch(); };
+  if (PHONE.addEventListener) PHONE.addEventListener("change", onBreakpoint); else if (PHONE.addListener) PHONE.addListener(onBreakpoint);
+
+  document.addEventListener("toggle", function (e) {
+    var key = e.target && e.target.getAttribute && e.target.getAttribute("data-key");
+    if (!key) return;
+    state.open[key] = e.target.open; save();
+    if (key === "sec:stats" && e.target.open) scrollGridToLatest();
+  }, true);
+
+  // ---------- builders ----------
+  function section(id, title, count, countCls, body) {
+    var key = "sec:" + id;
+    return '<details class="sec" data-key="' + key + '"' + (state.open[key] ? " open" : "") + "><summary>" + CHEV +
+      '<h2><span class="ico">◆</span>' + esc(title) + "</h2>" + (count ? '<span class="sec-count ' + countCls + '">' + esc(count) + "</span>" : "") +
+      '</summary><div class="sec-body">' + body + "</div></details>";
+  }
+
+  // ----- Member Stats -----
+  function renderStatFilters() {
+    var el = document.getElementById("st-filters");
+    var allOn = state.stats.length === STATS.length;
+    var ranks = ["R4", "R3", "R2", "R1"].filter(function (r) { return tracked.some(function (m) { return m.rank === r; }); });
+    el.innerHTML =
+      '<div class="fgroup" role="group" aria-label="Stats"><span>Stats</span>' +
+        '<button class="chip" data-act="all" aria-pressed="' + allOn + '">All</button>' +
+        STATS.map(function (s) {
+          return '<button class="chip" data-act="stat" data-v="' + s[0] + '" aria-pressed="' + (state.stats.indexOf(s[0]) >= 0) + '">' + esc(s[1].replace(" Power", "")) + "</button>";
+        }).join("") + "</div>" +
+      '<div class="fgroup" role="group" aria-label="Dates"><span>Dates</span>' +
+        [["latest", "Latest"], ["4", "Last 4"], ["all", "All"]].map(function (o) {
+          return '<button class="chip" data-act="range" data-v="' + o[0] + '" aria-pressed="' + (state.range === o[0]) + '">' + o[1] + "</button>";
+        }).join("") + "</div>" +
+      (ranks.length > 1 ? '<div class="fgroup" role="group" aria-label="Rank"><span>Rank</span>' +
+        [["all", "All"]].concat(ranks.map(function (r) { return [r, r]; })).map(function (o) {
+          return '<button class="chip" data-act="rank" data-v="' + o[0] + '" aria-pressed="' + (state.rank === o[0]) + '">' + o[1] + "</button>";
+        }).join("") + "</div>" : "") +
+      '<div class="fgroup"><input class="search" id="q" type="search" placeholder="Find member" value="' + esc(state.q) + '" aria-label="Find member"></div>';
+    el.onclick = function (e) {
+      var b = e.target.closest("button.chip"); if (!b) return;
+      var act = b.getAttribute("data-act"), v = b.getAttribute("data-v");
+      if (act === "all") state.stats = state.stats.length === STATS.length ? ["total"] : STATS.map(function (s) { return s[0]; });
+      if (act === "stat") {
+        var i = state.stats.indexOf(v);
+        if (i >= 0) { if (state.stats.length > 1) state.stats.splice(i, 1); } else state.stats.push(v);
+      }
+      if (act === "range") state.range = v;
+      if (act === "rank") state.rank = v;
+      save(); renderStatFilters(); renderGrid();
+    };
+    document.getElementById("q").oninput = function (e) { state.q = e.target.value; save(); renderGrid(); };
+  }
+
+  function renderGrid() {
+    var el = document.getElementById("grid");
+    var shown = state.range === "all" ? dates : state.range === "4" ? dates.slice(-4) : dates.slice(-1);
+    var stats = STATS.filter(function (s) { return state.stats.indexOf(s[0]) >= 0; });
+    var q = state.q.trim().toLowerCase();
+    var list = tracked.filter(function (m) {
+      return (state.rank === "all" || m.rank === state.rank) && (!q || m.name.toLowerCase().indexOf(q) >= 0);
+    }).sort(byPower);
+    if (!list.length) { el.innerHTML = '<div class="notice">No members match.</div>'; return; }
+
+    var one = stats.length === 1;  // a single stat needs no Stat column; its name goes in the header
+    var grouped = !one && phone(); // phones: player name on its own row, so only the short Stat column is pinned
+    var colCount = (grouped ? 1 : one ? 1 : 2) + shown.length * 2;
+    var h = '<table class="grid' + (grouped ? " grouped" : "") + '"><thead><tr>' +
+      (grouped ? '<th class="l stick1" rowspan="2">Stat</th>'
+               : '<th class="l stick1" rowspan="2">Player' + (one ? '<br><span class="stat-h">' + esc(stats[0][1]) + "</span>" : "") + "</th>" +
+                 (one ? "" : '<th class="l stick2" rowspan="2">Stat</th>')) +
+      shown.map(function (d) { return '<th class="date" colspan="2">' + fmtDate(d) + est(d) + "</th>"; }).join("") + "</tr><tr>" +
+      shown.map(function () { return '<th class="sub num">Number</th><th class="sub dl">Delta</th>'; }).join("") + "</tr></thead><tbody>";
+    list.forEach(function (m) {
+      if (grouped) h += '<tr class="phead"><td class="l" colspan="' + colCount + '"><span class="pname">' + esc(m.name) + "</span></td></tr>";
+      stats.forEach(function (s, i) {
+        h += '<tr class="' + (i === stats.length - 1 ? "blockend" : "") + '">' +
+          (grouped ? '<td class="l statname stick1">' + esc(shortStat(s[1])) + "</td>"
+                   : (i === 0 ? '<td class="l name stick1" rowspan="' + stats.length + '" title="' + esc(m.name) + '">' + esc(m.name) + "</td>" : "") +
+                     (one ? "" : '<td class="l statname stick2">' + esc(s[1]) + "</td>"));
+        shown.forEach(function (d) {
+          var v = val(m, d, s[0]), pi = dates.indexOf(d) - 1, pv = pi >= 0 ? val(m, dates[pi], s[0]) : null;
+          var delta = v != null && pv ? (v - pv) / pv : null;
+          h += '<td class="num">' + fmt(s[0], v) + '</td><td class="dl">' + pctCell(delta) + "</td>";
+        });
+        h += "</tr>";
+      });
+    });
+    el.innerHTML = h + "</tbody></table>";
+    scrollGridToLatest();
+  }
+  function scrollGridToLatest() { var el = document.getElementById("grid"); if (el) el.scrollLeft = el.scrollWidth; }
+
+  // ----- Watchlist: low growth on any stat except HQ and Troop -----
+  function renderWatch() {
+    var el = document.getElementById("watch");
+    if (!prev) { el.innerHTML = '<div class="notice">Fills in after the second capture.</div>'; return; }
+    var title = '<div class="tbl-title flags-title">Flags' + info("flag-info", "How flags work",
+      'A stat is flagged when it grew <b class="nw">+0.1% or less in 7 days</b> (since ' + nwDate(base7) +
+      ') or <b class="nw">+0.5% or less in 30 days</b> (since ' + nwDate(baseL) + '). HQ Level and Troop Power are not checked.') + "</div>";
+    if (!watch.length) { el.innerHTML = title + '<div class="notice">Nobody flagged.</div>'; return; }
+    function cell(c, hit) {  // two decimals so a value just above a threshold doesn't read as equal to it
+      if (!c) return "—";
+      return hit ? '<span class="pill down">' + pctText(c.pct, 2) + "</span>" : '<span class="' + (c.pct > 0 ? "up" : "down") + '">' + pctText(c.pct, 2) + "</span>";
+    }
+    if (phone()) {
+      el.innerHTML = title + '<div class="tscroll"><table class="mini watch-m"><thead><tr><th class="l">Stat</th><th>7d · ' + fmtDate(base7, true) + "</th><th>30d · " + fmtDate(baseL, true) + "</th></tr></thead><tbody>" +
+        watch.map(function (w, i) {
+          var first = i === 0 || watch[i - 1].m !== w.m;
+          return (first ? '<tr class="phead"><td class="l" colspan="3"><span class="pname">' + esc(w.m.name) + "</span> " + rk(w.m.rank) + "</td></tr>" : "") +
+            '<tr><td class="l statcell">' + esc(shortStat(w.s[1])) + "</td><td>" + cell(w.c7, w.hit7) + "</td><td>" + cell(w.cL, w.hitL) + "</td></tr>";
+        }).join("") + "</tbody></table></div>";
+      return;
+    }
+    el.innerHTML = title + '<div class="tscroll"><table class="mini"><thead><tr><th class="l">Player</th><th class="l">Rank</th><th class="l">Stat</th><th>Now</th>' +
+      "<th>7 days · " + fmtDate(base7, true) + "</th><th>30 days · " + fmtDate(baseL, true) + "</th></tr></thead><tbody>" +
+      watch.map(function (w, i) {
+        var first = i === 0 || watch[i - 1].m !== w.m;
+        return '<tr' + (first && i ? ' class="grp"' : "") + '><td class="n">' + (first ? esc(w.m.name) : "") + '</td><td class="l">' + (first ? rk(w.m.rank) : "") +
+          '</td><td class="l statcell">' + esc(w.s[1]) + "</td><td>" + big(val(w.m, latest, w.s[0])) + "</td><td>" + cell(w.c7, w.hit7) + "</td><td>" + cell(w.cL, w.hitL) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
+  // ----- Summary (mirrors the Summary tab) -----
+  function renderSummary() {
+    var el = document.getElementById("summary");
+    el.innerHTML = SUMMARY.map(function (s) {
+      var key = "band:" + s[0];
+      var tip = "Players are ranked by % change in " + esc(s[1].toLowerCase()) + " from most to least.";
+      return '<details class="band" data-key="' + key + '"' + (state.open[key] ? " open" : "") + "><summary>" + CHEV + esc(s[1]) +
+        info("info-" + s[0], "How " + s[1] + " is ranked", tip) + "</summary>" +
+        '<div class="seg" role="group" aria-label="View">' + [["0", "All time"], ["1", "Since last"], ["2", full30 ? "30 days" : "Since first"]].map(function (o) {
+          return '<button class="chip" data-sv="' + o[0] + '" aria-pressed="' + (state.sumView === o[0]) + '">' + o[1] + "</button>";
+        }).join("") + "</div>" +
+        '<div class="band-body" data-view="' + esc(state.sumView) + '">' + changeTable(s[0], prev ? dates[0] : null, "All time") + changeTable(s[0], prev, "Since previous capture") +
+        changeTable(s[0], base30, full30 ? "Last 30 days" : "Since first capture") + "</div></details>";
+    }).join("");
+    el.onclick = function (e) {
+      var b = e.target.closest("button[data-sv]"); if (!b) return;
+      state.sumView = b.getAttribute("data-sv"); save();
+      el.querySelectorAll(".band-body").forEach(function (x) { x.setAttribute("data-view", state.sumView); });
+      el.querySelectorAll("button[data-sv]").forEach(function (x) { x.setAttribute("aria-pressed", x.getAttribute("data-sv") === state.sumView); });
+    };
+  }
+  function changeTable(key, from, title) {
+    var head = '<div class="tbl-title">' + esc(title) + (from ? ' · <span class="d">' + fmtDate(from, true) + "</span>" + est(from) : "") + "</div>";
+    if (!from) return "<div>" + head + '<div class="notice">Fills in after the second capture.</div></div>';
+    var rows = [];
+    tracked.forEach(function (m) { var c = change(m, key, from); if (c) rows.push({ m: m, c: c }); });
+    rows.sort(function (a, b) { return b.c.pct - a.c.pct || b.c.gain - a.c.gain; });
+    return "<div>" + head + '<div class="tscroll"><table class="mini"><thead><tr><th>#</th><th class="l">Player</th><th class="c-start">Start</th><th>Now</th><th class="c-gain">Gain</th><th>% Change</th></tr></thead><tbody>' +
+      rows.map(function (r, i) {
+        return '<tr><td class="rank">' + (i + 1) + '</td><td class="n">' + esc(r.m.name) + '</td><td class="c-start">' + fmt(key, r.c.start) + "</td><td>" + fmt(key, r.c.now) +
+          '</td><td class="c-gain">' + gain(r.c.gain) + '</td><td class="pct">' + pctCell(r.c.pct) + "</td></tr>";
+      }).join("") + "</tbody></table></div></div>";
+  }
+
+  // ----- Members Reference (mirrors the Member Reference tab) -----
+  function renderRef() {
+    var el = document.getElementById("ref");
+    el.innerHTML = '<div class="tscroll"><table class="mini"><thead><tr><th class="l"><span class="lg">Player Name</span><span class="sm">Player</span></th><th class="l">Rank</th><th class="l"><span class="lg">Active Member</span><span class="sm">Active</span></th><th class="l"><span class="lg">Track Status</span><span class="sm">Tracked</span></th></tr></thead><tbody>' +
+      members.map(function (m) {
+        return '<tr><td class="n">' + esc(m.name) + '</td><td class="l">' + rk(m.rank) + '</td><td class="l ' + (m.active ? "status-on" : "status-off") + '">' + (m.active ? "Active" : "Inactive") +
+          '</td><td class="l ' + (m.track ? "status-on" : "status-off") + '">' + (m.track ? "Yes" : "No") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+})();
+</script>
+</body>
+</html>
