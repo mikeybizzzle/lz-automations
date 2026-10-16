@@ -155,6 +155,7 @@
   .notice code { font-family: var(--mono); color: var(--accent); background: var(--accent-soft); padding: 2px 7px; border-radius: 3px; }
   .notice.error { border-color: var(--bad); color: #ffd0d2; }
   .empty-filter { padding: 22px; text-align: center; color: var(--ink-2); background: var(--panel); border: 1px dashed var(--line); border-radius: 3px; }
+  .empty-filter .reset { margin-top: 14px; min-height: 40px; padding: 0 16px; background: var(--accent); border-color: var(--accent); color: #fff; }
 
   footer { margin: 56px 0 28px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font: 11px/1.6 var(--mono); letter-spacing: 0.1em; color: var(--ink-2); text-transform: uppercase; }
 
@@ -513,7 +514,11 @@
   function renderDays(list) {
     var el = document.getElementById("days");
     if (!list.length) {
-      el.innerHTML = '<div class="empty-filter">No runs match these filters.</div>';
+      var hidden = data.runs.length;
+      el.innerHTML = '<div class="empty-filter">' + (hidden ? "Your filters are hiding all " + hidden + (hidden === 1 ? " run." : " runs.") : "No runs match these filters.") +
+        (hidden ? '<br><button class="chip reset" id="show-all">Show all runs</button>' : "") + "</div>";
+      var b = document.getElementById("show-all");
+      if (b) b.onclick = function () { state.task = "all"; state.status = "all"; state.range = "all"; save(); renderFilters(); renderFiltered(); };
       return;
     }
     var groups = [], cur = null;
