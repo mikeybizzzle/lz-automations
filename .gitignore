@@ -1,4 +1,6 @@
 # Each user's own run log stays on their computer
 data/*
 !data/README.md
+# The alliance page's data is exported per user and published from their own site repo
+alliance/data/
 .DS_Store
