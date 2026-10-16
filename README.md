@@ -1,34 +1,80 @@
-# LZ Automations
+# Last Z Tasks
 
-Claude skills that automate repeatable tasks in **Last Z: Survival Shooter**. The game runs in BlueStacks Air on macOS, and Claude drives it with computer use.
+Claude runs repeatable tasks in **Last Z: Survival Shooter** for you, logs each run, and shows your history on a dashboard on your computer.
 
-## Skills
+- The game runs in BlueStacks Air on a Mac, and Claude plays it with computer use.
+- You answer a few questions at the start of a task, then you can walk away.
+- When the task finishes, it's added to your dashboard and Claude can send a one-line summary to your phone.
 
-| Skill | What it does | Status |
+## What you need
+
+- A Mac with BlueStacks Air and Last Z installed
+- The Claude desktop app, signed in, with computer use turned on (Settings → This computer → Computer use)
+- Optional: Claude Code, if you'd rather work from the terminal
+
+## Setup (about 2 minutes)
+
+**In Claude Desktop**
+
+1. Create a folder named `Last-Z-Tasks` in your home folder.
+2. Start a new chat, then add that folder with **+** → **Add folder**.
+3. Send:
+   > Set up Last Z Tasks in this folder from https://github.com/mikeybizzzle/lz-automations
+
+**In Claude Code**
+
+```bash
+git clone https://github.com/mikeybizzzle/lz-automations ~/Last-Z-Tasks
+cd ~/Last-Z-Tasks && claude
+```
+
+Then send: `set up Last Z`
+
+Either way, Claude copies the task files, creates your run log, checks that it can see BlueStacks, and shows you how to open the dashboard.
+
+## Using it
+
+| Say | What happens |
+|---|---|
+| `run 10 boomers` | Runs 10 Stegosaurus rallies, logs the run, and notifies you |
+| `update Last Z Tasks` | Pulls the latest task files. Your run log is never touched. |
+| `check the Last Z run log` | Finds and fixes broken log entries |
+
+Open `Last-Z-Tasks/dashboard/index.html` in your browser to see your runs. It reloads every minute, so you can leave it open.
+
+**Before you step away:** keep the Mac awake and unlocked, and leave the Claude app and BlueStacks open. Computer use stops when the screen locks or the Mac sleeps.
+
+## Tasks
+
+| Task | Skill | Status |
 |---|---|---|
-| [last-z-running-boomers](skills/last-z-running-boomers/SKILL.md) | Runs a set number of Stegosaurus (Boomer) rallies. It checks fuel, waits when every formation is busy, and verifies each launch. | Tested 2026-10-16: 10/10 level-49 rallies |
+| Running Boomers (Stegosaurus rallies) | [last-z-running-boomers](.claude/skills/last-z-running-boomers/SKILL.md) | Tested 2026-10-16: 10/10 level-49 rallies |
 
-## Layout
+## How it's built
 
 ```
-skills/
-  <skill-name>/
-    SKILL.md      # instructions Claude follows
+Last-Z-Tasks/
+  CLAUDE.md                   ← workspace rules Claude follows
+  .claude/skills/
+    last-z-setup/             ← setup and health check
+    last-z-log-run/           ← shared last step: log the run, notify
+    last-z-running-boomers/   ← one folder per task
+  dashboard/index.html        ← the dashboard
+  data/runs.js                ← your run log (stays on your computer)
 ```
 
-Each skill folder holds a `SKILL.md` with `name` and `description` frontmatter. Scripts or reference files for a skill go in the same folder.
+- Skills live in `.claude/skills/`, so Claude Code loads them automatically. In Claude Desktop, `CLAUDE.md` points Claude to them.
+- The run log is a JavaScript file with one `LZ_RUNS.push({...});` line per run. The dashboard loads it directly, so it works by double-click with no server.
+- `data/` is git-ignored, so each person's history stays private and updates never overwrite it.
 
-## Adding a new task
+## Adding a task
 
 1. Walk Claude through the task once in the game.
-2. Have Claude write it up as `skills/<task-name>/SKILL.md`. Include:
+2. Have Claude write `.claude/skills/last-z-<task>/SKILL.md`, modeled on the Boomers skill. It should cover:
    - the setup questions to ask
    - each tap, with what to confirm before the next one
    - how to handle errors
-   - what goes in the end report
-3. Test it with a live run, fix what the game did differently, then add a row to the table above.
+   - the `last-z-log-run` step at the end
+3. Test it with a live run, then add a row to the Tasks table here and in `CLAUDE.md`.
 
-## Notes
-
-- Tap positions are recorded for the BlueStacks window size used during testing. Each skill tells Claude to check them against a fresh screenshot before tapping.
-- These skills don't spend diamonds or real money. Anything that would needs Mike's approval first.
+Tasks never spend diamonds or real money. Anything that would gets stopped and logged.

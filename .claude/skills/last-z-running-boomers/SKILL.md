@@ -1,30 +1,33 @@
 ---
-name: "last-z-running-boomers"
-description: "Run a requested number of Stegosaurus (Boomer) rallies in Last Z: Survival Shooter on BlueStacks via computer use. Use when asked to run boomers or rally Stegosauruses."
+name: last-z-running-boomers
+description: Run a requested number of Stegosaurus (Boomer) rallies in Last Z: Survival Shooter on BlueStacks via computer use, then log the run. Use when asked to run boomers or rally Stegosauruses.
 ---
 
 # Last Z: Running Boomers
 
-Boomers = **Stegosaurus**. Not Velociraptor. The game runs in BlueStacks Air on Mike's Mac.
+Boomers = **Stegosaurus**. Not Velociraptor. The game runs in BlueStacks Air on the user's Mac.
 
 ## 1. Connect
 
 - Read the computer-use skill first.
 - Resolve and request access to **BlueStacks** (`com.now.gg.BlueStacks`).
 - Use the background `computer_app_*` tools (`computer_app_screenshot`, `computer_app_click`, `computer_app_batch`). They operate the game directly. You don't need a native-click script or full-screen control.
+- Note the start time for the log.
 
 ## 2. Ask only what's missing (one AskUserQuestion call)
 
 - Stegosaurus level.
-- Is Auto-Team off? If it's on, tell Mike to tap his rally square and turn it off, then wait for him.
+- Is Auto-Team off? If it's on, tell the user to tap their rally square and turn it off, then wait for them.
 - Total rallies. Put the fuel cost in each option (16 fuel x count).
 
-Don't ask how many formations he has. The game picks the first idle one, and the sidebar shows n/4.
+Ask everything up front. Once the loop starts the user may walk away, so don't stop to ask anything the skill already answers.
+
+Don't ask how many formations they have. The game picks the first idle one, and the sidebar shows n/4.
 Don't reuse answers from an earlier session.
 
 ## 3. Fuel check (do it yourself)
 
-The Team Up dialog shows current fuel at the top right (e.g. `256/150`; it can be over the cap). Read it on the first Team Up. If fuel is less than 16 x the remaining rallies, tell Mike the shortfall before you continue.
+The Team Up dialog shows current fuel at the top right (e.g. `256/150`; it can be over the cap). Read it on the first Team Up and record it as fuel before. If fuel is less than 16 x the remaining rallies, tell the user the shortfall before you continue.
 
 ## 4. Rally loop
 
@@ -57,13 +60,23 @@ If **Fuel Replenish** shows where March should be:
 3. Confirm it uses a fuel reserve, not diamonds or a purchase.
 4. Finish the refill and retry March.
 
-If it needs diamonds or money, stop and ask Mike. A refill doesn't count as a launch.
+If it needs diamonds or money, stop. Log the run as `partial` and say why in the notification. A refill doesn't count as a launch.
 
-## 7. Report
+## 7. Report and log
+
+Give the user a short report:
 
 - Requested count vs. verified launches, plus which formation went out each time.
-- Fuel before and after.
+- Fuel before and after. Read fuel after from the last Team Up dialog, minus 16 for that final launch.
 - Anything unusual: the level reset, misclicks, errors, "Neck and Neck" or "Insufficient Virus Resistance" warnings. Mention these, but don't stop for them.
 - These don't count as launches: Today's Claims (x/15), Boomer Spoils toasts, battle results.
+
+Then follow the **last-z-log-run** skill with:
+
+- `task`: `running-boomers`
+- `label`: `Running Boomers`
+- `settings`: `{"level": <level>}`
+- `requested` / `completed`: rallies asked for / verified
+- `resources`: `{"fuel": {"before": <n>, "after": <n>}}`
 
 Release the computer lock when you're done.

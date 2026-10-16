@@ -1,0 +1,4 @@
+# Each user's own run log stays on their computer
+data/*
+!data/README.md
+.DS_Store
