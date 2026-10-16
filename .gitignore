@@ -4,3 +4,5 @@ data/*
 # The alliance page's data is exported per user and published from their own site repo
 alliance/data/
 .DS_Store
+__pycache__/
+*.pyc
