@@ -47,13 +47,17 @@
 
   /* Top bar */
   .topbar { border-bottom: 1px solid var(--line); background: rgba(9, 13, 21, 0.92); backdrop-filter: blur(6px); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
-  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 12px; }
+  .topbar .bar { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 12px; }
   .brand { display: flex; align-items: center; gap: 10px; font: 700 21px/1 var(--display); letter-spacing: 0.04em; white-space: nowrap; }
   .brand svg { flex: none; }
   .brand b { color: var(--accent); font-weight: 700; }
   .sync { display: flex; align-items: center; gap: 8px; font: 12px/1 var(--mono); letter-spacing: 0.12em; color: var(--ink-2); border: 1px solid var(--line); padding: 8px 12px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
   .dot.wait { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+
+  /* Section jump bar (phones only) */
+  .topbar .jump { display: none; }
+  section, .anchor { scroll-margin-top: calc(110px + env(safe-area-inset-top, 0px)); }
 
   /* Hero */
   .hero { padding: 40px 0 8px; }
@@ -66,6 +70,8 @@
   /* HUD stats */
   .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 14px 16px 16px; position: relative; min-width: 0; }
+  .stat .lbl .l-short { display: none; }
+  .stat .lbl .dot { margin-left: auto; }
   .stat .lbl { font: 11px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .stat .val { font: 26px/1.1 var(--mono); color: var(--accent); margin-top: 10px; font-variant-numeric: tabular-nums; }
   .stat .val small { font-size: 15px; color: var(--ink-2); }
@@ -191,19 +197,71 @@
   footer { margin: 56px 0 28px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font: 11px/1.6 var(--mono); letter-spacing: 0.1em; color: var(--ink-2); text-transform: uppercase; }
 
   @media (max-width: 760px) {
-    .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .run > summary { grid-template-columns: 18px 58px minmax(0, 1fr) auto; }
-    .r-barwrap { display: none; }
-    .run > summary .pill { grid-column: 3 / 5; justify-self: start; }
-    .run-body { padding-left: 16px; }
-    .day-meta { margin-left: 0; width: 100%; }
-    .kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .topbar .bar { height: 52px; }
+    .brand { font-size: 19px; }
+    .sync { padding: 7px 10px; }
     .sync .long { display: none; }
+    .topbar .jump { display: flex; gap: 6px; padding-top: 0; padding-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+    .jump::-webkit-scrollbar { display: none; }
+    .jump button { flex: none; font: 600 13px/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 0 12px; min-height: 36px; cursor: pointer; }
+    .jump button:active { border-color: var(--accent); }
+
+    .hero { padding: 22px 0 2px; }
+    .kicker { font-size: 10.5px; letter-spacing: 0.18em; }
+    h1 { font-size: 42px; margin: 10px 0 6px; }
+    .lede { font-size: 14px; }
+
+    .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+    .stat { padding: 12px 12px 14px; }
+    .stat .lbl .l-long { display: none; }
+    .stat .lbl .l-short { display: inline; }
+    .stat .val { font-size: 24px; margin-top: 8px; }
+    .stat .sub { font-size: 12px; }
+
+    section { margin-top: 32px; }
+    .sec-head { margin-bottom: 12px; }
+    h2 { font-size: 22px; padding-bottom: 10px; }
+    .hint { display: none; }
+
+    .card { padding: 14px 14px 4px; }
+    .card h3 { font-size: 21px; }
+    .kv { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .kv dd { font-size: 16px; }
+    .intel > summary { min-height: 44px; padding: 0; }
+
+    /* Filters: one swipeable row per group, thumb-sized buttons */
+    .filters { display: grid; gap: 10px; padding: 12px; }
+    .fgroup { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -12px; padding: 0 12px; }
+    .fgroup::-webkit-scrollbar { display: none; }
+    .fgroup > span { flex: none; width: 56px; }
+    .chip { flex: none; min-height: 40px; padding: 0 13px; }
+
+    .chart-card { padding: 14px 12px 8px; }
+    .chart-title { flex-direction: column; gap: 6px; }
+
+    .day > summary { padding: 12px 14px; gap: 8px 12px; min-height: 52px; }
+    .day-name { min-width: 0; font-size: 17px; }
+    .day-meta { margin-left: 0; width: 100%; padding-left: 30px; gap: 14px; }
+
+    .run > summary { grid-template-columns: 18px 56px minmax(0, 1fr) auto auto; gap: 10px; padding: 12px 14px; min-height: 52px; }
+    .r-barwrap { display: none; }
+    .r-time { font-size: 12.5px; }
+    .r-task small { display: block; margin: 2px 0 0; }
+    .r-task { white-space: normal; }
+    .pill { padding: 0; width: 28px; height: 28px; justify-content: center; }
+    .pill .tx { display: none; }
+    .pill .ic { font-size: 14px; }
+
+    .run-body { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; padding: 2px 14px 16px; }
+    .field .k { margin-top: 12px; }
+
+    .notice { padding: 20px 16px; }
+    footer { flex-direction: column; gap: 4px; margin-top: 40px; }
   }
 </style>
 
 <header class="topbar">
-  <div class="wrap">
+  <div class="wrap bar">
     <div class="brand">
       <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
         <rect x="3" y="3" width="20" height="20" rx="2" fill="none" stroke="#ff6a1a" stroke-width="2"/>
@@ -213,6 +271,9 @@
     </div>
     <div class="sync"><span class="dot wait" id="sync-dot"></span><span id="sync-text">Loading</span></div>
   </div>
+  <nav class="jump wrap" aria-label="Sections">
+    <button data-jump="overview">Overview</button><button data-jump="tasks">Tasks</button><button data-jump="activity">Activity</button><button data-jump="log">Run log</button>
+  </nav>
 </header>
 
 <main class="wrap" id="app">
@@ -289,7 +350,7 @@
   function pct(a, b) { return b ? Math.round((a / b) * 100) : 0; }
   function sum(list, f) { return list.reduce(function (n, r) { return n + num(f(r)); }, 0); }
   function statusOf(r) { return STATUS[r.status] ? r.status : "complete"; }
-  function pill(st) { return '<span class="pill ' + st + '"><span class="ic">' + STATUS[st].ic + "</span>" + STATUS[st].label + "</span>"; }
+  function pill(st) { return '<span class="pill ' + st + '" title="' + STATUS[st].label + '"><span class="ic" aria-hidden="true">' + STATUS[st].ic + '</span><span class="tx">' + STATUS[st].label + "</span></span>"; }
   function setSync(text, live) {
     document.getElementById("sync-text").innerHTML = text;
     document.getElementById("sync-dot").className = "dot" + (live ? "" : " wait");
@@ -308,6 +369,17 @@
     save();
   }, true);
   window.addEventListener("beforeunload", save);
+
+  document.querySelector(".jump").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-jump]"); if (!b) return;
+    var el = document.getElementById("sec-" + b.getAttribute("data-jump"));
+    if (el) el.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  });
+  var lastW = window.innerWidth, rt;
+  window.addEventListener("resize", function () {
+    if (window.innerWidth === lastW || !data.runs.length) return;
+    lastW = window.innerWidth; clearTimeout(rt); rt = setTimeout(function () { renderChart(filtered()); }, 150);
+  });
 
   // ---------- data sources ----------
   var data = { runs: [], tasks: {}, taskOrder: [], skipped: 0 };
@@ -388,23 +460,23 @@
     var wFuel = sum(weekRuns, fuelSpent);
     var wFuelRuns = weekRuns.filter(function (r) { return fuelSpent(r) > 0; }).length;
 
-    var html = hero(runs.length + (runs.length === 1 ? " run" : " runs") + " logged · last run " + ago(runs[0])) + warning;
+    var html = '<div id="sec-overview" class="anchor">' + hero(runs.length + (runs.length === 1 ? " run" : " runs") + " logged · last run " + ago(runs[0])) + warning;
 
     html += '<div class="hud">' +
-      stat("Today · completed", tDone + "<small> / " + tReq + "</small>", todayRuns.length + (todayRuns.length === 1 ? " run" : " runs") + " today", tReq ? pct(tDone, tReq) : 0) +
-      stat("Runs · 7 days", weekRuns.length, sum(weekRuns, function (r) { return r.completed; }) + " completed", null) +
-      stat("Fuel spent · 7 days", wFuel, wFuelRuns ? "avg " + Math.round(wFuel / wFuelRuns) + " per run" : "no fuel logged", null) +
-      stat("Success rate", pct(allDone, allReq) + "<small>%</small>", allDone + " of " + allReq + " verified, all time", pct(allDone, allReq)) +
-      "</div>";
+      stat(["Today · completed", "Today"], tDone + "<small> / " + tReq + "</small>", todayRuns.length + (todayRuns.length === 1 ? " run" : " runs") + " today", tReq ? pct(tDone, tReq) : 0) +
+      stat(["Runs · 7 days", "Runs · 7d"], weekRuns.length, sum(weekRuns, function (r) { return r.completed; }) + " completed", null) +
+      stat(["Fuel spent · 7 days", "Fuel · 7d"], wFuel, wFuelRuns ? "avg " + Math.round(wFuel / wFuelRuns) + " per run" : "no fuel logged", null) +
+      stat(["Success rate", "Success"], pct(allDone, allReq) + "<small>%</small>", allDone + " of " + allReq + " verified", pct(allDone, allReq)) +
+      "</div></div>";
 
-    html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Tasks</h2><span class="hint">Tap intel for breakdowns</span></div><div class="tasks">';
+    html += '<section id="sec-tasks"><div class="sec-head"><h2><span class="ico">◆</span>Tasks</h2><span class="hint">Tap intel for breakdowns</span></div><div class="tasks">';
     taskOrder.forEach(function (key, i) { html += taskCard(tasks[key], i); });
     html += "</div></section>";
 
-    html += '<section><div class="sec-head"><h2><span class="ico">◆</span>Activity</h2><span class="hint">Filters apply to the chart and run log</span></div>' +
+    html += '<section id="sec-activity"><div class="sec-head"><h2><span class="ico">◆</span>Activity</h2><span class="hint">Filters apply to the chart and run log</span></div>' +
       '<div class="filters" id="filters"></div>' +
       '<div class="chart-card" id="chart-card"></div></section>' +
-      '<section><div class="sec-head"><h2><span class="ico">◆</span>Run log</h2><span class="hint">Tap a day or run for details</span></div>' +
+      '<section id="sec-log"><div class="sec-head"><h2><span class="ico">◆</span>Run log</h2><span class="hint">Tap a day or run for details</span></div>' +
       '<div class="days" id="days"></div></section>';
 
     html += "<footer><span>" + (CLOUD ? "Synced from your Last-Z-Tasks folder" : "Source · data/runs.js · append-only") +
@@ -424,7 +496,7 @@
       (sub ? '<p class="lede">' + esc(sub) + "</p>" : "") + "</div>";
   }
   function stat(label, value, sub, barPct) {
-    return '<div class="stat"><div class="lbl">' + esc(label) + '<span class="dot"></span></div><div class="val">' + value + "</div>" +
+    return '<div class="stat"><div class="lbl"><span class="l-long">' + esc(label[0]) + '</span><span class="l-short">' + esc(label[1]) + '</span><span class="dot"></span></div><div class="val">' + value + "</div>" +
       '<div class="sub">' + esc(sub) + "</div>" +
       (barPct == null ? "" : '<div class="bar" role="img" aria-label="' + barPct + ' percent"><i style="width:' + Math.min(100, barPct) + '%"></i></div>') + "</div>";
   }
@@ -546,7 +618,11 @@
     svg += "</svg>";
 
     // Bars and labels are HTML, positioned in percentages, so text never stretches with the SVG.
-    var labels = "", bars = "", step = nDays <= 14 ? 1 : nDays <= 30 ? 3 : 7;
+    // Space date labels by the chart's real width (about 40px each) so they never collide on a phone.
+    var plotPx = Math.max(200, card.clientWidth - 32);
+    var fit = Math.max(2, Math.floor((plotPx * (plotW / W)) / 40));
+    var step = Math.max(1, Math.ceil(nDays / fit));
+    var labels = "", bars = "";
     days.forEach(function (d, i) {
       var cx = padL + colW * i + colW / 2;
       var h = d.done ? Math.max(3, (d.done / nice) * plotH) : 0;
@@ -587,6 +663,7 @@
     };
     plot.onclick = function (e) { var hit = e.target.closest(".hit"); if (hit) show(hit, e.clientY); };
     plot.onmouseleave = function () { tip.classList.remove("on"); };
+    document.addEventListener("touchstart", function (e) { if (!plot.contains(e.target)) tip.classList.remove("on"); }, { passive: true });
   }
 
   function renderDays(list) {
