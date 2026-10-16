@@ -11,7 +11,7 @@ Boomers = **Stegosaurus**. Not Velociraptor. The game runs in BlueStacks Air on 
 
 - Read the computer-use skill first.
 - Resolve and request access to **BlueStacks** (`com.now.gg.BlueStacks`).
-- Use the background `computer_app_*` tools (`computer_app_screenshot`, `computer_app_click`, `computer_app_batch`). They operate the game directly. You don't need a native-click script or full-screen control.
+- Use the background `computer_app_*` tools (`computer_app_screenshot`, `computer_app_click`, `computer_app_batch`). They operate the game directly without taking over the screen.
 - Note the start time for the log.
 
 ## 2. Ask only what's missing (one AskUserQuestion call)
